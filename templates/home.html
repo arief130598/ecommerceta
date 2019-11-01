@@ -1,0 +1,128 @@
+{% load staticfiles %}
+{% load static %}
+
+<!DOCTYPE html>
+<!--
+* CoreUI - Free Bootstrap Admin Template
+* @version v2.1.14
+* @link https://coreui.io
+* Copyright (c) 2018 creativeLabs Łukasz Holeczek
+* Licensed under MIT (https://coreui.io/license)
+-->
+
+<html lang="en">
+  <head>
+    <base href="./">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template">
+    <meta name="author" content="Łukasz Holeczek">
+    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
+    <title>CoreUI Free Bootstrap Admin Template</title>
+    <!-- Icons-->
+    <link rel="icon" type="image/ico" href="{% static 'img/favicon.ico' %}" sizes="any" />
+    <!-- Main styles for this application-->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  </head>
+  <body class="app flex-row align-items-center">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="card-group">
+          <div class="card text-white bg-primary d-md-down-none p-4">
+            <div class="animated fadeIn">
+              <div class="card-body text-center">
+                <h2 class="mb-5" id='logintitle'>Choose Method :</h2>
+                <form class="row justify-content-center" id="homelogin">
+                  <div id='firstlogin' style="display:contents">
+                    <button type="button" class="btn btn-lg btn-outline-light mr-4" id="dropdownkmeans">k-Means</button>
+                    <button type="button" class="btn btn-lg btn-outline-light" id="dropdownexmax">Expectation Maximization</button>
+                  </div>
+                  <div id='secondloginkmeans' style="display:none">
+                    <div class="col-sm">
+                      <select class="form-control" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
+                        <option value="">Select Category</option>
+                        <option onclick="newdropdown()" value='men'>Men's Fashion</option>
+                        <option value='women'>Women's Fashion</option>
+                      </select>
+                    </div>
+                    <div class="col-sm">
+                      <script type="text/javascript">
+                        document.write('<select class="form-control" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
+                      </script>
+                    </div>
+                    <div class="col-sm">
+                      <script type="text/javascript">
+                        document.write('<select class="form-control" id="thirdcategory" onchange="javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
+                      </script>
+                    </div>
+                    <div id="dynamicdropdowntag">
+              
+                    </div>
+                  </div>
+                  <div id='secondloginexmax' style="display:none">
+                    <div class="col-sm">
+                      <select class="form-control" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
+                        <option value="">Select Category</option>
+                        <option onclick="newdropdown()" value='men'>Men's Fashion</option>
+                        <option value='women'>Women's Fashion</option>
+                      </select>
+                    </div>
+                    <div class="col-sm">
+                      <script type="text/javascript">
+                        document.write('<select class="form-control" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
+                      </script>
+                    </div>
+                    <div class="col-sm">
+                      <script type="text/javascript">
+                        document.write('<select class="form-control" id="thirdcategory" onchange="javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
+                      </script>
+                    </div>
+                    <div class="col-sm">
+                      <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="Input Keyword">
+                    </div>
+                    <div id="dynamicdropdowntag">
+              
+                    </div>
+                  </div>
+                </form>
+                <div id='Submitbacklogin' style="display:none">
+                  <button type="button" class="btn btn-outline-light mt-4 mr-4" id='backlogin'>Back</button>
+                  <button type="button" class="btn btn-outline-light mt-4">Submit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- CoreUI and necessary plugins-->
+    <script src="{% static "js/jquery/js/jquery.min.js" %}"></script>
+    <script src="{% static "js/bootstrap/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "js/@coreui/coreui/js/coreui.min.js" %}"></script>
+    <script src="{% static "js/dynamicdropdown.js" %}"></script>
+    <script>
+      $(document).ready(function(){
+        $("#dropdownkmeans").click(function(){
+          document.getElementById('logintitle').innerHTML = "Choose Category :";
+          document.getElementById('firstlogin').style.display = 'none';
+          document.getElementById('secondloginkmeans').style.display = 'contents';
+          document.getElementById('Submitbacklogin').style.display = 'contents';
+        });
+        $("#dropdownexmax").click(function(){
+          document.getElementById('logintitle').innerHTML = "Choose Category :";
+          document.getElementById('firstlogin').style.display = 'none';
+          document.getElementById('secondloginexmax').style.display = 'contents';
+          document.getElementById('Submitbacklogin').style.display = 'contents';
+        });
+        $("#backlogin").click(function(){
+          document.getElementById('logintitle').innerHTML = "Choose Method :";
+          document.getElementById('firstlogin').style.display = 'contents';
+          document.getElementById('secondloginkmeans').style.display = 'none';
+          document.getElementById('secondloginexmax').style.display = 'none';
+          document.getElementById('Submitbacklogin').style.display = 'none';
+        });
+      });
+    </script>
+  </body>
+</html>
