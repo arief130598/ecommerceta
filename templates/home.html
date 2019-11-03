@@ -19,110 +19,401 @@
     <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template">
     <meta name="author" content="Łukasz Holeczek">
     <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
-    <title>CoreUI Free Bootstrap Admin Template</title>
-    <!-- Icons-->
-    <link rel="icon" type="image/ico" href="{% static 'img/favicon.ico' %}" sizes="any" />
+    <title>E-Commerce</title>
     <!-- Main styles for this application-->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
   </head>
-  <body class="app flex-row align-items-center">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="card-group">
-          <div class="card text-white bg-primary d-md-down-none p-4">
-            <div class="animated fadeIn">
-              <div class="card-body text-center">
-                <h2 class="mb-5" id='logintitle'>Choose Method :</h2>
-                <form class="row justify-content-center" id="homelogin">
-                  <div id='firstlogin' style="display:contents">
-                    <button type="button" class="btn btn-lg btn-outline-light mr-4" id="dropdownkmeans">k-Means</button>
-                    <button type="button" class="btn btn-lg btn-outline-light" id="dropdownexmax">Expectation Maximization</button>
+  <body>
+    <header class="app-header navbar">
+      <a class="navbar-brand" href="#">
+        <img class="navbar-brand-full" src="{% static "img/logo.svg" %}" width="89" height="25" alt="CoreUI Logo">
+        <img class="navbar-brand-minimized" src="{% static "img/sygnet.svg" %}" width="30" height="30" alt="CoreUI Logo">
+      </a>
+      <form>
+          <ul class="nav navbar-nav ml-auto">
+            <li class="nav-item px-1">
+              <select class="form-control" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
+                <option value="">Select Category</option>
+                <option onclick="newdropdown()" value='men'>Men's Fashion</option>
+                <option value='women'>Women's Fashion</option>
+              </select>
+            </li>
+            <li class="nav-item px-1">
+              <script type="text/javascript">
+                document.write('<select class="form-control" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
+              </script>
+            </li>
+            <li class="nav-item px-1">
+              <script type="text/javascript">
+                document.write('<select class="form-control" id="thirdcategory" onchange="javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
+              </script>
+            </li>
+            <div id="dynamicdropdowntag">
+
+            </div>
+            <li class="nav-item px-1 mt-2 mr-4">
+              <button type="submit" class="btn btn-primary ml-4 mb-2" onclick="newdropdown()">Search</button>
+            </li>
+            </ul>
+        </form>
+    </header>
+    <div style="margin-top: 2%" class="app-body">
+      <main class="main">
+        <div class="container-fluid">
+          <div class="animated fadeIn">
+            <div class="row">
+              <div class="col-sm-6 col-lg-3">
+                <div class="card bg-info">
+                  <div class="card-header"><strong>TREND SEPATU PRIA BULAN INI</strong></div>
+                    <div class="row">
+                      <div class="col-sm mt-2 ml-2 mr-2">
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>1. Adidas Nemeziz</a>
+                            <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                            <div class="text-muted small">(38,37%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>2. Adidas Ultraboost</a>
+                            <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                            <div class="text-muted small">(11,81%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div id='secondloginkmeans' style="display:none">
-                    <div class="col-sm">
-                      <select class="form-control" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
-                        <option value="">Select Category</option>
-                        <option onclick="newdropdown()" value='men'>Men's Fashion</option>
-                        <option value='women'>Women's Fashion</option>
-                      </select>
-                    </div>
-                    <div class="col-sm">
-                      <script type="text/javascript">
-                        document.write('<select class="form-control" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
-                      </script>
-                    </div>
-                    <div class="col-sm">
-                      <script type="text/javascript">
-                        document.write('<select class="form-control" id="thirdcategory" onchange="javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
-                      </script>
-                    </div>
-                    <div id="dynamicdropdowntag">
-              
-                    </div>
-                  </div>
-                  <div id='secondloginexmax' style="display:none">
-                    <div class="col-sm">
-                      <select class="form-control" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
-                        <option value="">Select Category</option>
-                        <option onclick="newdropdown()" value='men'>Men's Fashion</option>
-                        <option value='women'>Women's Fashion</option>
-                      </select>
-                    </div>
-                    <div class="col-sm">
-                      <script type="text/javascript">
-                        document.write('<select class="form-control" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
-                      </script>
-                    </div>
-                    <div class="col-sm">
-                      <script type="text/javascript">
-                        document.write('<select class="form-control" id="thirdcategory" onchange="javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
-                      </script>
-                    </div>
-                    <div class="col-sm">
-                      <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="Input Keyword">
-                    </div>
-                    <div id="dynamicdropdowntag">
-              
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <div class="card bg-danger">
+                    <div class="card-header"><strong>TREND JAM TANGAN PRIA BULAN INI</strong></div>
+                    <div class="row">
+                      <div class="col-sm mt-2 ml-2 mr-2">
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>1. Adidas Nemeziz</a>
+                            <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                            <div class="text-muted small">(38,37%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>2. Adidas Ultraboost</a>
+                            <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                            <div class="text-muted small">(11,81%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </form>
-                <div id='Submitbacklogin' style="display:none">
-                  <button type="button" class="btn btn-outline-light mt-4 mr-4" id='backlogin'>Back</button>
-                  <button type="button" class="btn btn-outline-light mt-4">Submit</button>
+                </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card bg-warning">
+                  <div class="card-header"><strong>TREND TAS WANITA BULAN INI</strong></div>
+                  <div class="row">
+                    <div class="col-sm mt-2 ml-2 mr-2">
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>1. Adidas Nemeziz</a>
+                          <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                          <div class="text-muted small">(38,37%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>2. Adidas Ultraboost</a>
+                          <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                          <div class="text-muted small">(11,81%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card bg-success">
+                  <div class="card-header"><strong>TREND SEPATU WANITA BULAN INI</strong></div>
+                  <div class="row">
+                    <div class="col-sm mt-2 ml-2 mr-2">
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>1. Adidas Nemeziz</a>
+                          <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                          <div class="text-muted small">(38,37%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>2. Adidas Ultraboost</a>
+                          <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                          <div class="text-muted small">(11,81%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.col-->
+            </div>
+            <!-- /.row-->
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-5">
+                    <h4 class="card-title mb-0">Adidas</h4>
+                    <div class="small text-muted">Pakaian Pria > Sepatu</div>
+                    <div class="small text-muted">Total Terjual 1.280.050 Produk</div>
+                  </div>
+                  <!-- /.col-->
+                  <div class="col-sm-7 d-none d-md-block">
+                    <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
+                      <label class="btn btn-outline-secondary active"  onclick="dayChart()">
+                        <input id="option1" type="radio" name="options" autocomplete="off"> Day
+                      </label>
+                      <label class="btn btn-outline-secondary" onclick="monthChart()">
+                        <input id="option2" type="radio" name="options" autocomplete="off"> Month
+                      </label>
+                      <label class="btn btn-outline-secondary"  onclick="yearChart()">
+                        <input id="option3" type="radio" name="options" autocomplete="off"> Year
+                      </label>
+                    </div>
+                  </div>
+                  <!-- /.col-->
+                </div>
+                <!-- /.row-->
+                <!--Line Chart-->
+                <div class="chart-wrapper" style="height:300px;margin-top:40px;" id="containerchart">
+                    <canvas class="chart" id="main-chart"></canvas>
+                </div>
+                <!--End of Line Chart-->
+              </div>
+              <div class="card-footer">
+                <div class="row text-center">
+                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
+                    <div class="text-muted">Penjualan Tertinggi (Hari)</div>
+                    <strong>4.666 (21 Mei 2019)</strong>
+                  </div>
+                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
+                      <div class="text-muted">Penjualan Tertinggi (Bulan)</div>
+                      <strong>14.000 (Mei 2019)</strong>
+                  </div>
+                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
+                    <div class="text-muted">Penjualan Tertinggi (Tahun)</div>
+                    <strong>29.703 (2019)</strong>
+                  </div>
+                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
+                    <div class="text-muted">Penjualan Terendah (Hari)</div>
+                    <strong>290 (20 April 2018)</strong>
+                  </div>
+                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
+                      <div class="text-muted">Penjualan Terendah (Bulan)</div>
+                      <strong>2.970 (April 2018)</strong>
+                  </div>
+                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
+                    <div class="text-muted">Penjualan Terendah (Tahun)</div>
+                    <strong>7.000 (2018)</strong>
+                  </div>
                 </div>
               </div>
             </div>
+            <div class="row">
+              <div class="col-sm-6 col-lg-3">
+                <div class="card bg-info">
+                  <div class="card-header"><strong>BEST SELLER BAJU PRIA BULAN INI</strong></div>
+                    <div class="row">
+                      <div class="col-sm mt-2 ml-2 mr-2">
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>1. Adidas Nemeziz</a>
+                            <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                            <div class="text-muted small">(38,37%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>2. Adidas Ultraboost</a>
+                            <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                            <div class="text-muted small">(11,81%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <div class="card bg-danger">
+                    <div class="card-header"><strong>BEST SELLER SEPATU PRIA BULAN INI</strong></div>
+                    <div class="row">
+                      <div class="col-sm mt-2 ml-2 mr-2">
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>1. Adidas Nemeziz</a>
+                            <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                            <div class="text-muted small">(38,37%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="progress-group">
+                          <div class="progress-group-header align-items-end">
+                            <a>2. Adidas Ultraboost</a>
+                            <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                            <div class="text-muted small">(11,81%)</div>
+                          </div>
+                          <div class="progress-group-bars">
+                            <div class="progress progress-xs">
+                              <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card bg-warning">
+                  <div class="card-header"><strong>BEST SELLER TAS WANITA BULAN INI</strong></div>
+                  <div class="row">
+                    <div class="col-sm mt-2 ml-2 mr-2">
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>1. Adidas Nemeziz</a>
+                          <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                          <div class="text-muted small">(38,37%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>2. Adidas Ultraboost</a>
+                          <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                          <div class="text-muted small">(11,81%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card bg-success">
+                  <div class="card-header"><strong>BEST SELLER SEPATU WANITA BULAN INI</strong></div>
+                  <div class="row">
+                    <div class="col-sm mt-2 ml-2 mr-2">
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>1. Adidas Nemeziz</a>
+                          <div class="ml-auto font-weight-bold mr-2">491.235</div>
+                          <div class="text-muted small">(38,37%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="progress-group">
+                        <div class="progress-group-header align-items-end">
+                          <a>2. Adidas Ultraboost</a>
+                          <div class="ml-auto font-weight-bold mr-2">151.223</div>
+                          <div class="text-muted small">(11,81%)</div>
+                        </div>
+                        <div class="progress-group-bars">
+                          <div class="progress progress-xs">
+                            <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.col-->
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
+    <footer class="app-footer">
+      <div>
+        <a href="https://coreui.io">CoreUI</a>
+        <span>&copy; 2018 creativeLabs.</span>
+      </div>
+      <div class="ml-auto">
+        <span>Powered by</span>
+        <a href="https://coreui.io">CoreUI</a>
+      </div>
+    </footer>
     <!-- CoreUI and necessary plugins-->
     <script src="{% static "js/jquery/js/jquery.min.js" %}"></script>
     <script src="{% static "js/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/@coreui/coreui/js/coreui.min.js" %}"></script>
+    <!-- Plugins and scripts required by this view-->
+    <script src="{% static "js/chart.js/js/Chart.min.js" %}"></script>
+    <script src="{% static "js/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js" %}"></script>
+    <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "js/dynamicdropdown.js" %}"></script>
-    <script>
-      $(document).ready(function(){
-        $("#dropdownkmeans").click(function(){
-          document.getElementById('logintitle').innerHTML = "Choose Category :";
-          document.getElementById('firstlogin').style.display = 'none';
-          document.getElementById('secondloginkmeans').style.display = 'contents';
-          document.getElementById('Submitbacklogin').style.display = 'contents';
-        });
-        $("#dropdownexmax").click(function(){
-          document.getElementById('logintitle').innerHTML = "Choose Category :";
-          document.getElementById('firstlogin').style.display = 'none';
-          document.getElementById('secondloginexmax').style.display = 'contents';
-          document.getElementById('Submitbacklogin').style.display = 'contents';
-        });
-        $("#backlogin").click(function(){
-          document.getElementById('logintitle').innerHTML = "Choose Method :";
-          document.getElementById('firstlogin').style.display = 'contents';
-          document.getElementById('secondloginkmeans').style.display = 'none';
-          document.getElementById('secondloginexmax').style.display = 'none';
-          document.getElementById('Submitbacklogin').style.display = 'none';
-        });
-      });
-    </script>
   </body>
 </html>
