@@ -432,27 +432,3 @@ $('#exampleModalCenter').on('shown.bs.modal',function(event){
     modalChart.update();
   });
 });
-
-var backbutton = "<button type='button' class='btn btn-outline-light mt-4 mr-4' id='backlogin'>Back</button>";
-var submitbutton = "<button type='button' class='btn btn-outline-light mt-4'>Submit</button>";
-$("#dropdownkmeans").click(function(){
-  document.getElementById('logintitle').innerHTML = "Choose Category :"
-  $("dropdownexmax").remove();
-  var kmeanshtml = "<div id='secondloginkmeans' style='display:none'> <div class='col-sm'> <select class='form-control' id='firstcategory' onchange='javascript: dynamicdropdown(this.options[this.selectedIndex].value);'> <option value=''>Select Category</option> <option onclick='newdropdown()' value='men'>Men's Fashion</option> <option value='women'>Women's Fashion</option> </select> </div><div class='col-sm'> <script type='text/javascript' language='JavaScript'> document.write('<select class='form-control' id='secondcategory' onchange='javascript: dynamicdropdown1(this.options[this.selectedIndex].value);'><option value=''>No Category</option></select>') </script> </div><div class='col-sm'> <script type='text/javascript' language='JavaScript'> document.write('<select class='form-control' id='thirdcategory' onchange='javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);'><option value=''>No Category</option></select>') </script> </div><div id='dynamicdropdowntag' name='dynamicdropdowntag'> </div></div>";
- 
-  document.getElementById('firstlogin').style.display = 'contents';
-  document.getElementById('dropdownexmax').destroy();
-});
-$("#dropdownexmax").click(function(){
-  document.getElementById('logintitle').innerHTML = "Choose Category :"
-  document.getElementById('firstlogin').style.display = 'none';
-  document.getElementById('secondloginexmax').style.display = 'contents';
-  document.getElementById('Submitbacklogin').style.display = 'contents';
-});
-$("#backlogin").click(function(){
-  document.getElementById('logintitle').innerHTML = "Choose Method :"
-  document.getElementById('firstlogin').style.display = 'contents';
-  document.getElementById('secondloginkmeans').style.display = 'none';
-  document.getElementById('secondloginexmax').style.display = 'none';
-  document.getElementById('Submitbacklogin').style.display = 'none';
-});

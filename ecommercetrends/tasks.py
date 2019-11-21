@@ -130,4 +130,4 @@ def totalulasan(k, katmodel, katmodel2):
 
     totalulasan = produkfix.sort_values(by=['Jumlah'], ascending=False)
     totalulasan = totalulasan.reset_index(drop=True)
-    return totalulasan.to_json(orient='records')
+    return {'produk': totalulasan['Produk'], 'jumlah': totalulasan['jumlah']}

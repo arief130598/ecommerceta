@@ -25,9 +25,9 @@
     <link href="{% static 'css/loading.css' %}" rel="stylesheet">
   </head>
   <body>
-    <div class="bar">
+    <div id='loadingbar' class="bar">
         <div class="circle"></div>
-        <p class="pload">{{ task_id }}</p>
+        <p class="pload">Loading</p>
     </div>
     <header style="display: none" id='header' class="app-header navbar">
       <a class="navbar-brand" href="#">
@@ -437,9 +437,27 @@
     <script src="{% static "js/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/@coreui/coreui/js/coreui.min.js" %}"></script>
     <!-- Plugins and scripts required by this view-->
-    <script src="{% static "js/chart.js/js/Chart.min.js" %}"></script>
+    <script src="{% static "js/chart.js/js/Chart.js" %}"></script>
     <script src="{% static "js/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "js/dynamicdropdown.js" %}"></script>
+    <script>
+        $(function () {
+            const id = '{{ task_id }}';
+           $.ajax({
+               url:"{% url 'gettask' %}",
+               data:{'task_id': id},
+               type:'get',
+               success: function (data) {
+                   if(data.state === 'SUCCESS'){
+                        console.log(data.result);
+                    }
+               },
+               error: function (data) {
+                   console.log("Error");
+               }
+           });
+        });
+    </script>
   </body>
 </html>
