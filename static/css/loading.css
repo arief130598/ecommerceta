@@ -11,7 +11,7 @@ html, body {
   width: 500px;
   margin: 0 auto;
   background: #fff;
-  margin-top: 150px;
+  margin-top: 25%;
 }
 
 .circle {
@@ -26,9 +26,9 @@ html, body {
   -webkit-animation: move 5s infinite;
 }
 
-p {
+.pload {
   position: absolute;
-  top: -35px;
+  top: -25px;
   right: -85px;
   text-transform: uppercase;
   color: #347fc3;
