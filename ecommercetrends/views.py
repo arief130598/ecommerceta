@@ -25,6 +25,7 @@ def get_task_info(request):
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:
             data = {
+                'state': task.state,
                 'result': json.loads(task.result)
             }
             return HttpResponse(json.dumps(data), content_type='application/json')

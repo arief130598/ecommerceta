@@ -1,7 +1,6 @@
 # Create your tasks here
 from __future__ import absolute_import, unicode_literals
 
-import pyodbc
 import pandas as pd
 import nltk
 from sklearn.cluster import KMeans
@@ -13,15 +12,13 @@ from ecommercetrends.models import SepatuPria
 @shared_task
 def totalulasan(k, katmodel, katmodel2):
 
+    dataset = None
+
     current_task.update_state(state='PROGRESS', meta={'status': 'Get Data From Database'})
 
-    data = None
-
-    if katmodel is 'Sepatu Pria':
-        if katmodel2 is '':
-            data = SepatuPria.objects.values('produk', 'tanggal')
-
-    dataset = pd.DataFrame(data)
+    if katmodel == 'Sepatu Pria':
+        if katmodel2 == '':
+            dataset = pd.DataFrame(list(SepatuPria.objects.values('produk', 'tanggal')))
 
     dataset = dataset.rename(index=str, columns={"produk": "nama", "tanggal": "tanggal"})
 
@@ -130,4 +127,4 @@ def totalulasan(k, katmodel, katmodel2):
 
     totalulasan = produkfix.sort_values(by=['Jumlah'], ascending=False)
     totalulasan = totalulasan.reset_index(drop=True)
-    return {'produk': totalulasan['Produk'], 'jumlah': totalulasan['jumlah']}
+    return totalulasan.to_json(orient='records')
