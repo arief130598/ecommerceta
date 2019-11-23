@@ -62,7 +62,7 @@
       </ul>
       </form>
     </header>
-    <div style="margin-top: 2%; display: none" class="app-body">
+    <div style="margin-top: 2%; display: none" id="main" class="app-body">
       <main class="main">
         <div class="container-fluid">
           <div class="animated fadeIn">
@@ -71,9 +71,9 @@
               <div class="card-body">
                 <div class="row">
                   <div class="col-sm-5">
-                    <h4 class="card-title mb-0">Adidas</h4>
-                    <div class="small text-muted">Pakaian Pria > Sepatu</div>
-                    <div class="small text-muted">Total Terjual 1.280.050 Produk</div>
+                    <h4 class="card-title mb-0">{{title}}</h4>
+                    <div class="small text-muted" style="text-transform:capitalize;">{{kategori}}</div>
+                    <div id='totalulasan' class="small text-muted">Total Terjual 1.280.050 Produk</div>
                   </div>
                   <!-- /.col-->
                   <div class="col-sm-7 d-none d-md-block">
@@ -131,7 +131,7 @@
             <div class="row">
               <div class="col-md-12">
                 <div class="card">
-                  <div class="card-header"><strong>Jenis Produk Adidas</strong></div>
+                  <div class="card-header"><strong>Jenis Produk {{title}}</strong></div>
                   <div class="card-body">
                     <div class="row ml-2 mr-2">
                       <div class="col-sm-3">
@@ -181,189 +181,9 @@
                     <div class="row mt-4 mr-2 ml-2">
                       <div class="col-md-12">
                         <div class="card">
-                          <div class="card-header"><strong>List Produk Adidas</strong></div>
+                          <div class="card-header"><strong>List Produk {{title}}</strong></div>
                             <div class="row">
-                              <div class="col-sm mt-2 ml-2 mr-2">
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">1. Adidas Nemeziz</a>
-                                    <div class="ml-auto font-weight-bold mr-2">491.235</div>
-                                    <div class="text-muted small">(38,37%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 38.37%" aria-valuenow="56" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">2. Adidas Ultraboost</a>
-                                    <div class="ml-auto font-weight-bold mr-2">151.223</div>
-                                    <div class="text-muted small">(11,81%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 11.81%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">3. Adidas Derby</a>
-                                    <div class="ml-auto font-weight-bold mr-2">137.564</div>
-                                    <div class="text-muted small">(10,74%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 10.74%" aria-valuenow="11" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">4. Adidas Yezzy</a>
-                                    <div class="ml-auto font-weight-bold mr-2">127.319</div>
-                                    <div class="text-muted small">(9,94%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 9.94%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">5. Adidas AX2</a>
-                                    <div class="ml-auto font-weight-bold mr-2">107.319</div>
-                                    <div class="text-muted small">(8,38%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 8.38%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">6. Adidas Questar</a>
-                                    <div class="ml-auto font-weight-bold mr-2">87.319</div>
-                                    <div class="text-muted small">(6,82%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 6.82%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">7. Adidas AX2</a>
-                                    <div class="ml-auto font-weight-bold mr-2">67.319</div>
-                                    <div class="text-muted small">(5,25%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 5.25%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">8. Adidas Alphabounce</a>
-                                    <div class="ml-auto font-weight-bold mr-2">47.319</div>
-                                    <div class="text-muted small">(3,69%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 3.69%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">9. Adidas Cloudfoam</a>
-                                    <div class="ml-auto font-weight-bold mr-2">27.519</div>
-                                    <div class="text-muted small">(2,14%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 2.14%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">10. Adidas Solarglide</a>
-                                    <div class="ml-auto font-weight-bold mr-2">17.319</div>
-                                    <div class="text-muted small">(1,35%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 1.35%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">11. Adidas Stansmith</a>
-                                    <div class="ml-auto font-weight-bold mr-2">7.319</div>
-                                    <div class="text-muted small">(0,57%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 0.57%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">12. Adidas Neo</a>
-                                    <div class="ml-auto font-weight-bold mr-2">4.319</div>
-                                    <div class="text-muted small">(0,33%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 0.33%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">13. Adidas Samba</a>
-                                    <div class="ml-auto font-weight-bold mr-2">3.319</div>
-                                    <div class="text-muted small">(0,25%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 0.25%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">14. Adidas Conquisto</a>
-                                    <div class="ml-auto font-weight-bold mr-2">2.319</div>
-                                    <div class="text-muted small">(0,18%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 0.18%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="progress-group">
-                                  <div class="progress-group-header align-items-end">
-                                    <a href="#" data-toggle="modal" data-target="#exampleModalCenter">15. Adidas Edge Lux</a>
-                                    <div class="ml-auto font-weight-bold mr-2">1.319</div>
-                                    <div class="text-muted small">(0,1%)</div>
-                                  </div>
-                                  <div class="progress-group-bars">
-                                    <div class="progress progress-xs">
-                                      <div class="progress-bar" role="progressbar" style="width: 0.1%" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                  </div>
-                                </div>
+                              <div id='listvalue' class="col-sm mt-2 ml-2 mr-2">
                               </div>
                             </div>
                           </div>
@@ -422,7 +242,7 @@
           </div>
       </main>
     </div>
-    <footer style="display: none" class="app-footer">
+    <footer style="display: none" id='footer' class="app-footer">
       <div>
         <a href="https://coreui.io">CoreUI</a>
         <span>&copy; 2018 creativeLabs.</span>
@@ -441,23 +261,10 @@
     <script src="{% static "js/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "js/dynamicdropdown.js" %}"></script>
+    <script src="{% static "js/response.js" %}"> </script>
     <script>
-        $(function () {
-            const id = '{{ task_id }}';
-           $.ajax({
-               url:"{% url 'gettask' %}",
-               data:{'task_id': id},
-               type:'get',
-               success: function (data) {
-                   if(data.state === 'SUCCESS'){
-                        console.log(data.result);
-                    }
-               },
-               error: function (data) {
-                   console.log("Error");
-               }
-           });
-        });
+        const id = '{{ task_id }}';
+        const url = "{% url 'gettask' %}";
     </script>
   </body>
 </html>

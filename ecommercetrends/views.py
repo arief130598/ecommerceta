@@ -35,6 +35,8 @@ def get_task_info(request):
 
 def search(request):
     idtask = 0
+    katmodel = ''
+    katmodel2 = ''
 
     box1 = request.POST.get('box1')
     box2 = request.POST.get('box2')
@@ -47,13 +49,25 @@ def search(request):
             if box3 == '':
                 k = 8
                 katmodel = 'Sepatu Pria'
-                katmodel2 = ''
                 task = totalulasan.delay(k, katmodel, katmodel2)
                 idtask = task.id
         else:
             print(box2)
 
+    if katmodel2 == '':
+        kategori = box1 + " > " + box2
+        title = katmodel
+    else:
+        title = katmodel2
+        kategori = box1 + " > " + box2 + " > " + box3
+
+    list_variabel = {
+        'title': title,
+        'kategori': kategori,
+        'task_id': idtask
+    }
+
     if idtask is not 0:
-        return render(request, 'ecommercetrends/search.html', {'task_id': idtask})
+        return render(request, 'ecommercetrends/search.html', list_variabel)
     else:
         return render(request, 'ecommercetrends/search.html')
