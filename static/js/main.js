@@ -198,23 +198,7 @@ var tanggal = [
   new Date("2015-5-25 14:12").toLocaleString('ID',options),
 ];
 
-var options2 = { year: 'numeric', month: 'long'};
-var tanggal2 = [
-  new Date("2015-3").toLocaleString('ID',options2), 
-  new Date("2015-4").toLocaleString('ID',options2), 
-  new Date("2015-5").toLocaleString('ID',options2),
-];
-
-
-var options3 = { year: 'numeric'};
-var tanggal3 = [
-  new Date("2014").toLocaleString('ID',options3), 
-  new Date("2015").toLocaleString('ID',options3), 
-  new Date("2016").toLocaleString('ID',options3),
-];
 var value = [200, 300, 100];
-var value2 = [400, 500, 200];
-var value3 = [1700, 1500, 2200];
 
 var mainChart = new Chart($('#main-chart'), {
   type: 'line',
@@ -347,24 +331,6 @@ var brandBoxChart4 = new Chart($('#social-box-chart-4'), {
   options: brandBoxChartOptions
 });
 //# sourceMappingURL=main.js.map
-
-function yearChart() {
-  mainChart.data.datasets[0].data =value3;
-  mainChart.data.labels = tanggal3;
-  mainChart.update();
-}
-
-function monthChart() {
-  mainChart.data.datasets[0].data =value2;
-  mainChart.data.labels = tanggal2;
-  mainChart.update();
-}
-
-function dayChart() {
-  mainChart.data.datasets[0].data =value;
-  mainChart.data.labels = tanggal;
-  mainChart.update();
-}
 
 function dropdownkmeans(){
   document.getElementById('#firstlogin').style.display = 'none';

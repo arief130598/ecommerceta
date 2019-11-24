@@ -16,13 +16,28 @@ def get_task_info(request):
     task_id = request.GET.get('task_id', None)
     if task_id is not None:
         task = AsyncResult(task_id)
-
-        if task.state == "PROGRESS" or task.state == "PENDING":
+        if task.state == "PENDING":
             data = {
                 'state': task.state,
                 'result': task.result
             }
             return HttpResponse(json.dumps(data), content_type='application/json')
+        elif task.state == "PROGRESS":
+            if task.info.get('status') == "Bag of Word":
+                data = {
+                    'state': task.state,
+                    'result': task.info.get('status'),
+                    'day': json.loads(task.info.get('day')),
+                    'month': json.loads(task.info.get('month')),
+                    'year': json.loads(task.info.get('year'))
+                }
+                return HttpResponse(json.dumps(data), content_type='application/json')
+            else:
+                data = {
+                    'state': task.state,
+                    'result': task.info.get('status')
+                }
+                return HttpResponse(json.dumps(data), content_type='application/json')
         else:
             data = {
                 'state': task.state,

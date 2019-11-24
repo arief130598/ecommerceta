@@ -22,7 +22,31 @@ def totalulasan(k, katmodel, katmodel2):
 
     dataset = dataset.rename(index=str, columns={"produk": "nama", "tanggal": "tanggal"})
 
-    current_task.update_state(state='PROGRESS', meta={'status': 'Bag of Word'})
+    dataset['tanggal'] = pd.to_datetime(dataset['tanggal'])
+    dataset['value'] = 1
+
+    day = dataset.groupby(dataset['tanggal'].dt.date).sum()
+    day['tanggal'] = day.index
+    day = day.reset_index(drop=True)
+    day = day.rename(index=str, columns={"Assignment": "jumlah"})
+    day['tanggal'] = pd.to_datetime(day['tanggal'])
+    day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
+    day = day.to_json(orient='records')
+
+    month = dataset.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
+    month['tanggal'] = month.index
+    month = month.reset_index(drop=True)
+    month = month.rename(index=str, columns={"Assignment": "jumlah"})
+    month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
+    month = month.to_json(orient='records')
+
+    year = dataset.groupby(dataset['tanggal'].dt.year).sum()
+    year['tanggal'] = year.index
+    year = year.reset_index(drop=True)
+    year = year.rename(index=str, columns={"Assignment": "jumlah"})
+    year = year.to_json(orient='records')
+
+    current_task.update_state(state='PROGRESS', meta={'status': 'Bag of Word', 'day': day, 'month': month, 'year': year})
 
     # 0 tokenize
     nama_token = []
