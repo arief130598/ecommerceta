@@ -205,7 +205,6 @@ var mainChart = new Chart($('#main-chart'), {
   data: {
     labels: tanggal,
     datasets: [{
-      label: 'My First dataset',
       backgroundColor: hexToRgba(getStyle('--info'), 10),
       borderColor: getStyle('--info'),
       pointHoverBackgroundColor: '#fff',

@@ -1,5 +1,9 @@
-var tanggal, month, year = [];
-var valuetanggal, valuemonth, valueyear = [];
+var tanggal = [];
+var month = [];
+var year = [];
+var valuetanggal = [];
+var valuemonth = [];
+var valueyear = [];
 
 function yearChart() {
   mainChart.data.datasets[0].data =valueyear;
@@ -19,6 +23,7 @@ function dayChart() {
   mainChart.update();
 }
 
+var statebag = 0;
 $(function get_task() {
     $.ajax({
        url: url,
@@ -30,7 +35,24 @@ $(function get_task() {
            }
            else if (data.state == 'PROGRESS') {
                 console.log(data.result);
+                if(data.result == "Bag of Word" && statebag == 0){
+                    $.each(data.day, function (i, item) {
+                        tanggal.push(item.tanggal);
+                        valuetanggal.push(item.value);
+                    });
 
+                    $.each(data.month, function (i, item) {
+                        month.push(item.tanggal);
+                        valuemonth.push(item.value);
+                    });
+
+                    $.each(data.year, function (i, item) {
+                        year.push(item.tanggal);
+                        valueyear.push(item.value);
+                    });
+                    monthChart();
+                    statebag = 1;
+                }
            }else{
                 var total = 0;
                 $.each(data.result, function (i, item) {
@@ -61,25 +83,10 @@ $(function get_task() {
 
                 $("html").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});
                 $("body").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});
-                $.each(data.day, function (i, item) {
-                    tanggal.push(item.tanggal);
-                    valuetanggal.push(item.value);
-                });
-
-                $.each(data.month, function (i, item) {
-                    month.push(item.tanggal);
-                    valuemonth.push(item.value);
-                });
-
-                $.each(year.day, function (i, item) {
-                    year.push(item.tanggal);
-                    valueyear.push(item.value);
-                });
-                dayChart();
-                $("#header").fadeIn();
-                $("#main").fadeIn();
-                $("#footer").fadeIn();
                 $("#loadingbar").fadeOut('slow');
+                $("#header").fadeIn(2000)
+                $("#main").fadeIn(2000);
+                $("#footer").fadeIn(2000);
            }
            if(data.state != 'SUCCESS') {
                setTimeout(function () {
