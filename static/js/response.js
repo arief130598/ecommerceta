@@ -23,6 +23,59 @@ function dayChart() {
   mainChart.update();
 }
 
+
+var tanggalproduk = [];
+var valueproduk= [];
+
+function addlistchart(item){
+    var ctx = document.getElementById(item);
+    new Chart($(ctx), {
+      type: 'line',
+      data: {
+        labels: tanggal,
+        datasets: [{
+          backgroundColor: hexToRgba(getStyle('--info'), 10),
+          borderColor: getStyle('--info'),
+          pointHoverBackgroundColor: '#fff',
+          borderWidth: 2,
+          data: valuetanggal
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          xAxes: [{
+            gridLines: {
+              drawOnChartArea: false
+            },
+            ticks: {
+                display: false
+            }
+          }],
+          yAxes: [{
+            ticks: {
+                min: 0,
+                max: 1000,
+                beginAtZero: true,
+                maxTicksLimit: 5,
+            }
+          }]
+        },
+        elements: {
+          point: {
+            radius: 0,
+            hitRadius: 10,
+            hoverRadius: 4,
+            hoverBorderWidth: 3
+          }
+        }
+      }
+    });
+}
+
 var statebag = 0;
 $(function get_task() {
     $.ajax({
@@ -51,7 +104,23 @@ $(function get_task() {
                         valueyear.push(item.value);
                     });
                     monthChart();
+                    $("#tinggihari").text(data.tinggihari.tanggal + " (" + data.tinggihari.value + ")");
+                    $("#tinggibulan").text(data.tinggibulan.tanggal + " (" + data.tinggibulan.value + ")");
+                    $("#tinggitahun").text(data.tinggitahun.tanggal + " (" + data.tinggitahun.value + ")");
+                    $("#rendahhari").text(data.rendahhari.tanggal + " (" + data.rendahhari.value + ")");
+                    $("#rendahbulan").text(data.rendahbulan.tanggal + " (" + data.rendahbulan.value + ")");
+                    $("#rendahtahun").text(data.rendahtahun.tanggal + " (" + data.rendahtahun.value + ")");
                     statebag = 1;
+                }
+                else if(data.result == "Produk Tertinggi dan Terendah"){
+                    $("#produktinggi").text(data.produktinggi.nama);
+                    $("#valuetinggi").text(data.produktinggi.jumlah);
+                    $("#produktinggi3").text(data.produk3month.nama);
+                    $("#valuetinggi3").text(data.produk3month.jumlah);
+                    $("#produktinggi1").text(data.produkmonth.nama);
+                    $("#valuetinggi1").text(data.produkmonth.jumlah);
+                    $("#produkrendah").text(data.produkrendah.nama);
+                    $("#valuerendah").text(data.produkrendah.jumlah);
                 }
            }else{
                 var total = 0;
@@ -63,8 +132,12 @@ $(function get_task() {
                 $.each(data.result, function (i, item) {
                     var percent = item.Jumlah / total * 100;
 
+                    var canvastemplate = "" +
+                        '<div class="chart-wrapper" style="height:130px;">' +
+                            '<canvas class="chart" id="'+ item.Produk +'"></canvas>' +
+                        '</div>';
                     var listvaluetemplate = "" +
-                        '<div class="progress-group">' +
+                        '<div class="progress-group" style="margin-top: 2%;">' +
                           '<div class="progress-group-header align-items-end">' +
                             '<a href="#" data-toggle="modal" data-target="#exampleModalCenter" style="text-transform:capitalize;">' + x + '. ' + item.Produk + '</a>' +
                             '<div class="ml-auto font-weight-bold mr-2">' + item.Jumlah + '</div>' +
@@ -78,6 +151,8 @@ $(function get_task() {
                         '</div>';
 
                     $("#listvalue").append(listvaluetemplate);
+                    $("#listvalue").append(canvastemplate);
+                    addlistchart(item.Produk);
                     x++;
                 });
 

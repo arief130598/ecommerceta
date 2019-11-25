@@ -29,7 +29,23 @@ def get_task_info(request):
                     'result': task.info.get('status'),
                     'day': json.loads(task.info.get('day')),
                     'month': json.loads(task.info.get('month')),
-                    'year': json.loads(task.info.get('year'))
+                    'year': json.loads(task.info.get('year')),
+                    'tinggihari': json.loads(task.info.get('tinggihari')),
+                    'tinggibulan': json.loads(task.info.get('tinggibulan')),
+                    'tinggitahun': json.loads(task.info.get('tinggitahun')),
+                    'rendahhari': json.loads(task.info.get('rendahhari')),
+                    'rendahbulan': json.loads(task.info.get('rendahbulan')),
+                    'rendahtahun': json.loads(task.info.get('rendahtahun'))
+                }
+                return HttpResponse(json.dumps(data), content_type='application/json')
+            elif task.info.get('status') == "Produk Tertinggi dan Terendah":
+                data = {
+                    'state': task.state,
+                    'result': task.info.get('status'),
+                    'produktinggi': json.loads(task.info.get('produktinggi')),
+                    'produkrendah': json.loads(task.info.get('produkrendah')),
+                    'produkmonth': json.loads(task.info.get('produkmonth')),
+                    'produk3month': json.loads(task.info.get('produk3month'))
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -62,7 +78,7 @@ def search(request):
             print(box2)
         elif box2 == 'Shoes':
             if box3 == '':
-                k = 8
+                k = 9
                 katmodel = 'Sepatu Pria'
                 task = totalulasan.delay(k, katmodel, katmodel2)
                 idtask = task.id
