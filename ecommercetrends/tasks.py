@@ -203,7 +203,23 @@ def totalulasan(k, katmodel, katmodel2):
             produk[i] = ' '.join(produk[i])
     # convert to dataframe and sort
     produkfix = pd.DataFrame({'Produk': produk, 'Jumlah': jumlah})
-    produkfix = produkfix.reset_index(drop=True)
+
+    listprodukdata = []
+    for i in produkfix.index:
+        datatanggal = pd.DataFrame(data['tanggal'].loc[data['Assignment'] == i])
+        datatanggal['value'] = 1
+        day = datatanggal.groupby(datatanggal['tanggal'].dt.date).sum()
+        day['tanggal'] = day.index
+        day = day.reset_index(drop=True)
+        day = day.rename(index=str, columns={"Assignment": "jumlah"})
+        day['tanggal'] = pd.to_datetime(day['tanggal'])
+        day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
+        listprodukdata.append(day.to_json(orient='records'))
+
+
+    current_task.update_state(state='PROGRESS', meta={'status': 'Jumlah dan Tanggal Produk', 'listproduk': listprodukdata})
+
+    time.sleep(10)
 
     produktinggi = produkfix.loc[produkfix['Jumlah'].idxmax()]
     produktinggi = {

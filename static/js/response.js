@@ -5,6 +5,9 @@ var valuetanggal = [];
 var valuemonth = [];
 var valueyear = [];
 
+var tanggalproduk = [];
+var valueproduk = [];
+
 function yearChart() {
   mainChart.data.datasets[0].data =valueyear;
   mainChart.data.labels = year;
@@ -27,18 +30,18 @@ function dayChart() {
 var tanggalproduk = [];
 var valueproduk= [];
 
-function addlistchart(item){
+function addlistchart(item, y){
     var ctx = document.getElementById(item);
     new Chart($(ctx), {
       type: 'line',
       data: {
-        labels: tanggal,
+        labels: tanggalproduk[y],
         datasets: [{
           backgroundColor: hexToRgba(getStyle('--info'), 10),
           borderColor: getStyle('--info'),
           pointHoverBackgroundColor: '#fff',
           borderWidth: 2,
-          data: valuetanggal
+          data: valueproduk[y]
         }]
       },
       options: {
@@ -57,8 +60,6 @@ function addlistchart(item){
           }],
           yAxes: [{
             ticks: {
-                min: 0,
-                max: 1000,
                 beginAtZero: true,
                 maxTicksLimit: 5,
             }
@@ -122,13 +123,27 @@ $(function get_task() {
                     $("#produkrendah").text(data.produkrendah.nama);
                     $("#valuerendah").text(data.produkrendah.jumlah);
                 }
+                else if(data.result == "Jumlah dan Tanggal Produk"){
+                    $.each(data.listproduk, function (i, item) {
+                        var tempvalue = [];
+                        var temptanggal = [];
+
+                        $.each(item, function (j, order) {
+                            temptanggal.push(order.tanggal);
+                            tempvalue.push(order.value);
+                        });
+
+                        tanggalproduk.push(temptanggal);
+                        valueproduk.push(tempvalue);
+                    });
+                }
            }else{
                 var total = 0;
                 $.each(data.result, function (i, item) {
                     total += item.Jumlah;
                 });
                 $("#totalulasan").text("Total Terjual " + total + " Produk");
-                var x=1;
+                var x=1,y=0;
                 $.each(data.result, function (i, item) {
                     var percent = item.Jumlah / total * 100;
 
@@ -152,8 +167,9 @@ $(function get_task() {
 
                     $("#listvalue").append(listvaluetemplate);
                     $("#listvalue").append(canvastemplate);
-                    addlistchart(item.Produk);
+                    addlistchart(item.Produk, y);
                     x++;
+                    y++;
                 });
 
                 $("html").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});

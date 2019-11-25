@@ -48,6 +48,17 @@ def get_task_info(request):
                     'produk3month': json.loads(task.info.get('produk3month'))
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
+            elif task.info.get('status') == "Jumlah dan Tanggal Produk":
+                list = []
+                for i in task.info.get('listproduk'):
+                    list.append(json.loads(i))
+
+                data = {
+                    'state': task.state,
+                    'result': task.info.get('status'),
+                    'listproduk': list
+                }
+                return HttpResponse(json.dumps(data), content_type='application/json')
             else:
                 data = {
                     'state': task.state,
