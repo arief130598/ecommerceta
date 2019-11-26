@@ -30,7 +30,7 @@
         <p class="pload">Loading</p>
     </div>
     <header style="display: none" id='header' class="app-header navbar">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" href="{% url 'home' %}">
         <img class="navbar-brand-full" src="{% static "img/logo.svg" %}" width="89" height="25" alt="CoreUI Logo">
         <img class="navbar-brand-minimized" src="{% static "img/sygnet.svg" %}" width="30" height="30" alt="CoreUI Logo">
       </a>
@@ -199,48 +199,6 @@
                         </div>
                       </div>
                       <!-- /.col-->
-                    </div>
-                    <!-- Modal -->
-                    <div class="modal fade bd-example-modal-xl" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalCenterTitle">Adidas</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="row">
-                              <div class="col-sm-5">
-                                <div class="small text-muted">Pakaian Pria > Sepatu</div>
-                                <div class="small text-muted">Total Terjual 1.280.050 Produk</div>
-                              </div>
-                              <!-- /.col-->
-                              <div class="col-sm-7 d-none d-md-block">
-                                <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
-                                  <label id="modalday" class="btn btn-outline-secondary active">
-                                    <input type="radio" name="options" autocomplete="off"> Day
-                                  </label>
-                                  <label id="modalmonth" class="btn btn-outline-secondary">
-                                    <input type="radio" name="options" autocomplete="off"> Month
-                                  </label>
-                                  <label id="modalyear" class="btn btn-outline-secondary">
-                                    <input type="radio" name="options" autocomplete="off"> Year
-                                  </label>
-                                </div>
-                              </div>
-                              <!-- /.col-->
-                            </div>
-                            <!-- /.row-->
-                            <!--Line Chart-->
-                            <div style="height:300px; margin-top:40px;" id="modalcontainerchart">
-                              <canvas class="chart" id="modal-chart"></canvas>
-                            </div>
-                            <!--End of Line Chart-->
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>

@@ -100,6 +100,8 @@ def totalulasan(k, katmodel, katmodel2):
                                                       'tinggihari': tinggihari, 'tinggibulan': tinggibulan, 'tinggitahun': tinggitahun,
                                                       'rendahhari': rendahhari, 'rendahbulan': rendahbulan, 'rendahtahun': rendahtahun})
 
+    time.sleep(10)
+    
     # 0 tokenize
     nama_token = []
     for x, y in enumerate(dataset['nama']):
