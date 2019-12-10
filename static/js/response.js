@@ -89,6 +89,7 @@ $(function get_task() {
            }
            else if (data.state == 'PROGRESS') {
                 console.log(data.result);
+                $("#statusloading").text(data.result);
                 if(data.result == "Bag of Word" && statebag == 0){
                     $.each(data.day, function (i, item) {
                         tanggal.push(item.tanggal);

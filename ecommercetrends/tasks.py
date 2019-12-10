@@ -9,7 +9,7 @@ import nltk
 from sklearn.cluster import KMeans
 from celery import shared_task, current_task
 
-from ecommercetrends.models import SepatuPria
+from ecommercetrends import models
 
 
 @shared_task
@@ -21,7 +21,9 @@ def totalulasan(k, katmodel, katmodel2):
 
     if katmodel == 'Sepatu Pria':
         if katmodel2 == '':
-            dataset = pd.DataFrame(list(SepatuPria.objects.values('produk', 'tanggal')))
+            dataset = pd.DataFrame(list(models.SepatuPria.objects.values('produk', 'tanggal')))
+        elif katmodel2 == 'Adidas':
+            dataset = pd.DataFrame(list(models.SepatuPria.objects.filter(produk__contains='Adidas').values('produk', 'tanggal')))
 
     dataset = dataset.rename(index=str, columns={"produk": "nama", "tanggal": "tanggal"})
 

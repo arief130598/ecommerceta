@@ -25,10 +25,14 @@
     <link href="{% static 'css/loading.css' %}" rel="stylesheet">
   </head>
   <body>
-    <div id='loadingbar' class="bar">
-        <div class="circle"></div>
-        <p class="pload">Loading</p>
+    <div id='loadingbar' style="margin-top: 30%">
+        <p id="statusloading" style="margin: 10% auto 5% 5% ; color: white;text-align: center;font-size: x-large;">PENDING</p>
+        <div class="bar">
+            <div class="circle"></div>
+            <p class="pload">Loading</p>
+        </div>
     </div>
+
     <header style="display: none" id='header' class="app-header navbar">
       <a class="navbar-brand" href="{% url 'home' %}">
         <img class="navbar-brand-full" src="{% static "img/logo.svg" %}" width="89" height="25" alt="CoreUI Logo">

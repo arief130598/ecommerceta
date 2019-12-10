@@ -29,3 +29,30 @@ class SepatuWanita(AbstractUlasan):
 
     class Meta:
         verbose_name_plural = 'Sepatu Wanita'
+
+
+class ShopeeTasWanita(models.Model):
+    toko = models.CharField(max_length=255)
+    terjual = models.IntegerField(default=0)
+    jumlahulasan = models.IntegerField(default=0)
+    harga = models.IntegerField(default=0)
+    produk = models.CharField(max_length=255)
+    url = models.TextField(null=True, blank=True)
+    asaltoko = models.CharField(max_length=255, null=True, blank=True)
+
+
+class ShopeeTasWanitaUlasan(models.Model):
+    nama = models.TextField(null=True, blank=True)
+    variasi = models.CharField(max_length=255, null=True, blank=True)
+    rating = models.IntegerField(default=1)
+    tanggal = models.DateField()
+    toko = models.CharField(max_length=255)
+    produk = models.CharField(max_length=255)
+    review = models.TextField(null=True, blank=True)
+
+
+class ReviewName(models.Model):
+    produk = models.CharField(max_length=255)
+
+class ReviewName2(models.Model):
+    produk = models.CharField(max_length=255)

@@ -93,6 +93,12 @@ def search(request):
                 katmodel = 'Sepatu Pria'
                 task = totalulasan.delay(k, katmodel, katmodel2)
                 idtask = task.id
+            elif box3 == 'Adidas':
+                k = 12
+                katmodel = 'Sepatu Pria'
+                katmodel2 = 'Adidas'
+                task = totalulasan.delay(k, katmodel, katmodel2)
+                idtask = task.id
         else:
             print(box2)
 
