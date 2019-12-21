@@ -6,286 +6,405 @@ import time
 
 import pandas as pd
 import nltk
+from django.db.models import Q
 from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import silhouette_score
+
 from celery import shared_task, current_task
+
+# Library for debugging celery
+'''from celery import current_app
+current_app.conf.CELERY_ALWAYS_EAGER = True
+current_app.conf.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True'''
 
 from ecommercetrends import models
 
 
 @shared_task
-def totalulasan(k, katmodel, katmodel2):
+def totalulasan(katmodel, katmodel2):
 
-    dataset = None
+    def task(dataset, judul, jumproduk, indexmonth, index3month):
+        dataset = dataset.rename(index=str, columns={"produk": "nama", "tanggal": "tanggal"})
 
-    current_task.update_state(state='PROGRESS', meta={'status': 'Get Data From Database'})
+        dataset['tanggal'] = pd.to_datetime(dataset['tanggal'])
+        dataset['value'] = 1
 
-    if katmodel == 'Sepatu Pria':
-        if katmodel2 == '':
-            dataset = pd.DataFrame(list(models.SepatuPria.objects.values('produk', 'tanggal')))
-        elif katmodel2 == 'Adidas':
-            dataset = pd.DataFrame(list(models.SepatuPria.objects.filter(produk__contains='Adidas').values('produk', 'tanggal')))
-
-    dataset = dataset.rename(index=str, columns={"produk": "nama", "tanggal": "tanggal"})
-
-    dataset['tanggal'] = pd.to_datetime(dataset['tanggal'])
-    dataset['value'] = 1
-
-    day = dataset.groupby(dataset['tanggal'].dt.date).sum()
-    day['tanggal'] = day.index
-    day = day.reset_index(drop=True)
-    day = day.rename(index=str, columns={"Assignment": "jumlah"})
-    day['tanggal'] = pd.to_datetime(day['tanggal'])
-    day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
-
-    tinggihari = day.loc[day['value'].idxmax()]
-    tinggihari = {
-        'value': int(tinggihari['value']),
-        'tanggal': tinggihari['tanggal']
-    }
-    tinggihari = json.dumps(tinggihari)
-
-    rendahhari = day.loc[day['value'].idxmin()]
-    rendahhari = {
-        'value': int(rendahhari['value']),
-        'tanggal': rendahhari['tanggal']
-    }
-    rendahhari = json.dumps(rendahhari)
-
-    day = day.to_json(orient='records')
-
-    month = dataset.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
-    month['tanggal'] = month.index
-    month = month.reset_index(drop=True)
-    month = month.rename(index=str, columns={"Assignment": "jumlah"})
-    month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
-    month = month[month['value'] != 0]
-    month = month.reset_index(drop=True)
-
-    tinggibulan = month.loc[month['value'].idxmax()]
-    tinggibulan = {
-        'value': int(tinggibulan['value']),
-        'tanggal': tinggibulan['tanggal']
-    }
-    tinggibulan = json.dumps(tinggibulan)
-
-    rendahbulan = month.loc[month['value'].idxmin()]
-    rendahbulan = {
-        'value': int(rendahbulan['value']),
-        'tanggal': rendahbulan['tanggal']
-    }
-    rendahbulan = json.dumps(rendahbulan)
-
-    month = month.to_json(orient='records')
-
-    year = dataset.groupby(dataset['tanggal'].dt.year).sum()
-    year['tanggal'] = year.index
-    year = year.reset_index(drop=True)
-    year = year.rename(index=str, columns={"Assignment": "jumlah"})
-
-    tinggitahun = year.loc[year['value'].idxmax()]
-    tinggitahun = {
-        'value': int(tinggitahun['value']),
-        'tanggal': int(tinggitahun['tanggal'])
-    }
-    tinggitahun = json.dumps(tinggitahun)
-
-    rendahtahun = year.loc[year['value'].idxmin()]
-    rendahtahun = {
-        'value': int(rendahtahun['value']),
-        'tanggal': int(rendahtahun['tanggal'])
-    }
-    rendahtahun = json.dumps(rendahtahun)
-
-    year = year.to_json(orient='records')
-
-    current_task.update_state(state='PROGRESS', meta={'status': 'Bag of Word', 'day': day, 'month': month, 'year': year,
-                                                      'tinggihari': tinggihari, 'tinggibulan': tinggibulan, 'tinggitahun': tinggitahun,
-                                                      'rendahhari': rendahhari, 'rendahbulan': rendahbulan, 'rendahtahun': rendahtahun})
-
-    time.sleep(10)
-    
-    # 0 tokenize
-    nama_token = []
-    for x, y in enumerate(dataset['nama']):
-        nama_token.append(dataset['nama'][x].split())
-
-    # 1 bag of word
-    listword = []
-    for x, y in enumerate(dataset['nama']):
-        tokens = nltk.word_tokenize(dataset['nama'][x])
-        listword += tokens
-
-    worddict = dict.fromkeys(listword, 0)
-
-    # 2 create data with 0 value same with sum of data
-    word_token = []
-    for x in dataset['nama']:
-        word_token.append(dict.fromkeys(worddict, 0))
-
-    # 3 add = 1 for word same in nama_token
-    for x, y in enumerate(nama_token):
-        for word in nama_token[x]:
-            word_token[x][word] += 1
-
-    # 4 running tf from data before
-    tf = []
-    for x, y in enumerate(word_token):
-        tf.append(word_token[x].values())
-
-    # data feature extraction save as dataframe
-    readyclustering = pd.DataFrame(data=tf)
-
-    current_task.update_state(state='PROGRESS', meta={'status': 'Clustering'})
-
-    kmeans = KMeans(n_clusters=k, max_iter=200).fit(readyclustering)
-    clusters = kmeans.fit_predict(readyclustering)
-
-    hasilcluster = []
-    for i in clusters:
-        hasilcluster.append(i)
-
-    data = dataset
-    data['Assignment'] = hasilcluster
-
-    current_task.update_state(state='PROGRESS', meta={'status': 'Clustering with K-Means Finished'})
-
-    data = data.sort_values(by=['Assignment'])
-    data = data.reset_index(drop=True)
-
-    current_task.update_state(state='PROGRESS', meta={'status': 'Finding Total Produk'})
-
-    # Menjumlah tiap assignment
-    jumlah = [0]
-
-    def jumlahulasan(data):
-        a = 0
-        assignment = data['Assignment'][0]
-        for i, j in enumerate(data['Assignment']):
-            if i != 0:
-                if data['Assignment'][i] == assignment:
-                    jumlah[a] += 1
-                else:
-                    a += 1
-                    jumlah.append(1)
-                    assignment = data['Assignment'][i]
-
-    jumlahulasan(data)
-
-    # Mencari nama produk
-    nama_token = []
-    listword = []
-    produk = []
-    assignment = data['Assignment'][0]
-    for i, j in enumerate(data['Assignment']):
-        nama_token.append(data['nama'][i].split())
-        tokens = nltk.word_tokenize(data['nama'][i])
-        listword += tokens
-
-        if i != len(data['Assignment']) - 1 and data['Assignment'][i + 1] != data['Assignment'][i]:
-            worddict = dict.fromkeys(listword, 0)
-            for z, y in enumerate(nama_token):
-                for word in nama_token[z]:
-                    worddict[word] += 1
-            maxv = max(worddict.values())
-            produk.append([k for k, v in worddict.items() if v == maxv])
-
-            listword.clear()
-            nama_token.clear()
-        elif i == len(data['Assignment']) - 1:
-            worddict = dict.fromkeys(listword, 0)
-            for z, y in enumerate(nama_token):
-                for word in nama_token[z]:
-                    worddict[word] += 1
-            maxv = max(worddict.values())
-            produk.append([k for k, v in worddict.items() if v == maxv])
-
-            listword.clear()
-            nama_token.clear()
-
-    for i, j in enumerate(produk):
-        if not isinstance(produk[i], str):
-            produk[i] = ' '.join(produk[i])
-    # convert to dataframe and sort
-    produkfix = pd.DataFrame({'Produk': produk, 'Jumlah': jumlah})
-
-    listprodukdata = []
-    for i in produkfix.index:
-        datatanggal = pd.DataFrame(data['tanggal'].loc[data['Assignment'] == i])
-        datatanggal['value'] = 1
-        day = datatanggal.groupby(datatanggal['tanggal'].dt.date).sum()
+        day = dataset.groupby(dataset['tanggal'].dt.date).sum()
         day['tanggal'] = day.index
         day = day.reset_index(drop=True)
         day = day.rename(index=str, columns={"Assignment": "jumlah"})
         day['tanggal'] = pd.to_datetime(day['tanggal'])
         day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
-        listprodukdata.append(day.to_json(orient='records'))
 
+        tinggihari = day.loc[day['value'].idxmax()]
+        tinggihari = {
+            'value': int(tinggihari['value']),
+            'tanggal': tinggihari['tanggal']
+        }
+        tinggihari = json.dumps(tinggihari)
 
-    current_task.update_state(state='PROGRESS', meta={'status': 'Jumlah dan Tanggal Produk', 'listproduk': listprodukdata})
+        rendahhari = day.loc[day['value'].idxmin()]
+        rendahhari = {
+            'value': int(rendahhari['value']),
+            'tanggal': rendahhari['tanggal']
+        }
+        rendahhari = json.dumps(rendahhari)
 
-    time.sleep(10)
+        day = day.to_json(orient='records')
 
-    produktinggi = produkfix.loc[produkfix['Jumlah'].idxmax()]
-    produktinggi = {
-        'jumlah': int(produktinggi['Jumlah']),
-        'nama': produktinggi['Produk']
-    }
-    produktinggi = json.dumps(produktinggi)
+        month = dataset.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
+        month['tanggal'] = month.index
+        month = month.reset_index(drop=True)
+        month = month.rename(index=str, columns={"Assignment": "jumlah"})
+        month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
+        month = month[month['value'] != 0]
+        month = month.reset_index(drop=True)
 
-    produkrendah = produkfix.loc[produkfix['Jumlah'].idxmin()]
-    produkrendah = {
-        'jumlah': int(produkrendah['Jumlah']),
-        'nama': produkrendah['Produk']
-    }
-    produkrendah = json.dumps(produkrendah)
+        tinggibulan = month.loc[month['value'].idxmax()]
+        tinggibulan = {
+            'value': int(tinggibulan['value']),
+            'tanggal': tinggibulan['tanggal']
+        }
+        tinggibulan = json.dumps(tinggibulan)
 
-    lastmonth = data.sort_values(by="tanggal", ascending=True).set_index("tanggal").last("1M")
-    lastmonth = lastmonth.sort_values(by=['Assignment'])
-    lastmonth = lastmonth.reset_index(drop=True)
-    jumlah = [0]
-    jumlahulasan(lastmonth)
-    jumlah = pd.DataFrame(jumlah)
+        rendahbulan = month.loc[month['value'].idxmin()]
+        rendahbulan = {
+            'value': int(rendahbulan['value']),
+            'tanggal': rendahbulan['tanggal']
+        }
+        rendahbulan = json.dumps(rendahbulan)
 
-    jumlahtinggi = jumlah.loc[jumlah.idxmax()]
-    a = jumlahtinggi[0].index
-    a = int(a.values)
-    namaproduk = produkfix['Produk'][a]
-    jmlproduk = int(jumlahtinggi[0])
+        month = month.to_json(orient='records')
 
-    produkmonth = {
-        'jumlah': jmlproduk,
-        'nama': namaproduk
-    }
-    produkmonth = json.dumps(produkmonth)
+        year = dataset.groupby(dataset['tanggal'].dt.year).sum()
+        year['tanggal'] = year.index
+        year = year.reset_index(drop=True)
+        year = year.rename(index=str, columns={"Assignment": "jumlah"})
 
-    last3month = data.sort_values(by="tanggal", ascending=True).set_index("tanggal").last("3M")
-    last3month = last3month.sort_values(by=['Assignment'])
-    last3month = last3month.reset_index(drop=True)
-    jumlah = [0]
-    jumlahulasan(last3month)
-    jumlah = pd.DataFrame(jumlah)
+        tinggitahun = year.loc[year['value'].idxmax()]
+        tinggitahun = {
+            'value': int(tinggitahun['value']),
+            'tanggal': int(tinggitahun['tanggal'])
+        }
+        tinggitahun = json.dumps(tinggitahun)
 
-    jumlahtinggi = jumlah.loc[jumlah.idxmax()]
-    a = jumlahtinggi[0].index
-    a = int(a.values)
-    namaproduk = produkfix['Produk'][a]
-    jmlproduk = int(jumlahtinggi[0])
+        rendahtahun = year.loc[year['value'].idxmin()]
+        rendahtahun = {
+            'value': int(rendahtahun['value']),
+            'tanggal': int(rendahtahun['tanggal'])
+        }
+        rendahtahun = json.dumps(rendahtahun)
 
-    produk3month = {
-        'jumlah': jmlproduk,
-        'nama': namaproduk
-    }
-    produk3month = json.dumps(produk3month)
+        year = year.to_json(orient='records')
 
-    current_task.update_state(state='PROGRESS', meta={'status': 'Produk Tertinggi dan Terendah',
-                                                      'produk3month': produk3month,
-                                                      'produkmonth': produkmonth,
-                                                      'produktinggi': produktinggi,
-                                                      'produkrendah': produkrendah})
+        current_task.update_state(state='PROGRESS',
+                                  meta={'status': 'Bag of Word', 'day': day, 'month': month, 'year': year,
+                                        'tinggihari': tinggihari, 'tinggibulan': tinggibulan,
+                                        'tinggitahun': tinggitahun,
+                                        'rendahhari': rendahhari, 'rendahbulan': rendahbulan,
+                                        'rendahtahun': rendahtahun,
+                                        'judul': judul})
 
-    time.sleep(5)
+        time.sleep(10)
 
-    totalulasan = produkfix.sort_values(by=['Jumlah'], ascending=False)
-    totalulasan = totalulasan.reset_index(drop=True)
+        def feature_extraction(dataset):
+            # 0 tokenize
+            nama_token = [i.split() for i in dataset['nama']]
 
-    return totalulasan.to_json(orient='records')
+            # 1 bag of word
+            listword = []
+            for x in dataset['nama']:
+                tokens = nltk.word_tokenize(x)
+                listword += tokens
+
+            worddict = dict.fromkeys(listword, 0)
+
+            # 2 create data with 0 value same with sum of data
+            word_token = [dict.fromkeys(worddict, 0) for x in dataset['nama']]
+
+            # 3 add = 1 for word same in nama_token
+            for x, y in enumerate(nama_token):
+                for word in nama_token[x]:
+                    word_token[x][word] += 1
+
+            # 4 tf function
+            '''def compute_tf(word_dict, l):
+                tf = {}
+                sum_nk = len(l)
+                for word, count in word_dict.items():
+                    tf[word] = count / sum_nk
+                return tf'''
+
+            # 5 running tf from data before
+            for x in word_token:
+                # tf.append(compute_tf(word_token[x],nama_token[x]))
+                tf.append(x.values())
+
+        # Finding Best K with silhouette
+
+        if jumproduk is not 1:
+            dataset['nama'] = dataset['nama'].str.replace(judul, '')
+            dataset['nama'] = dataset['nama'].str.strip()
+            dataset.replace('', np.nan, inplace=True)
+            dataset = dataset.dropna()
+
+        datasetk = dataset
+        datasetk = datasetk.drop_duplicates(subset='nama', keep='first')
+        datasetk = datasetk.reset_index(drop=True)
+
+        kmax = datasetk.__len__()
+
+        if jumproduk is not 1:
+            datasetk = pd.DataFrame(np.repeat(datasetk.values, 5, axis=0))
+            datasetk = datasetk.rename(columns={0: 'nama', 1: 'tanggal'})
+
+        tf = []
+        feature_extraction(datasetk)
+        readyclustering = pd.DataFrame(data=tf)
+
+        sil = []
+
+        # dissimilarity would not be defined for a single cluster, thus, minimum number of clusters should be 2
+        for k in range(2, kmax):
+            kmeans = KMeans(n_clusters=k).fit(readyclustering)
+            labels = kmeans.labels_
+            sil.append(silhouette_score(readyclustering, labels, metric='euclidean'))
+
+        k = sil.index(max(sil)) + 2
+        # plt.plot(range(2, kmax), sil)
+        # plt.show()
+
+        tf = []
+        feature_extraction(dataset)
+        readyclustering = pd.DataFrame(data=tf)
+
+        current_task.update_state(state='PROGRESS', meta={'status': 'Clustering'})
+
+        kmeans = KMeans(n_clusters=k, max_iter=200).fit(readyclustering)
+        clusters = kmeans.labels_
+
+        hasilcluster = [i for i in clusters]
+
+        data = dataset
+        data['Assignment'] = hasilcluster
+
+        current_task.update_state(state='PROGRESS', meta={'status': 'Clustering with K-Means Finished'})
+
+        data = data.sort_values(by=['Assignment'])
+        data = data.reset_index(drop=True)
+
+        current_task.update_state(state='PROGRESS', meta={'status': 'Finding Total Produk'})
+
+        # Mencari nama produk
+        nama_token = []
+        listword = []
+        produk = []
+        assignment = data['Assignment'][0]
+        for i, j in enumerate(data['Assignment']):
+            nama_token.append(data['nama'][i].split())
+            tokens = nltk.word_tokenize(data['nama'][i])
+            listword += tokens
+
+            if i != len(data['Assignment']) - 1 and data['Assignment'][i + 1] != data['Assignment'][i]:
+                worddict = dict.fromkeys(listword, 0)
+                for z, y in enumerate(nama_token):
+                    for word in nama_token[z]:
+                        worddict[word] += 1
+                maxv = max(worddict.values())
+                produk.append([k for k, v in worddict.items() if v == maxv])
+
+                listword.clear()
+                nama_token.clear()
+            elif i == len(data['Assignment']) - 1:
+                worddict = dict.fromkeys(listword, 0)
+                for z, y in enumerate(nama_token):
+                    for word in nama_token[z]:
+                        worddict[word] += 1
+                maxv = max(worddict.values())
+                produk.append([k for k, v in worddict.items() if v == maxv])
+
+                listword.clear()
+                nama_token.clear()
+
+        for i, j in enumerate(produk):
+            if not isinstance(produk[i], str):
+                produk[i] = ' '.join(produk[i])
+        # convert to dataframe and sort
+
+        for i, j in enumerate(produk):
+            data.loc[data['Assignment'] == i, 'nama'] = j
+
+        produkfix = jumlahulasan(data)
+
+        lastmonth = data.sort_values(by="tanggal", ascending=True).set_index("tanggal").last("1M")
+        lastmonth = lastmonth.sort_values(by=['Assignment'])
+        lastmonth = lastmonth.reset_index(drop=True)
+        lastmonth.index += indexmonth
+
+        last3month = data.sort_values(by="tanggal", ascending=True).set_index("tanggal").last("3M")
+        last3month = last3month.sort_values(by=['Assignment'])
+        last3month = last3month.reset_index(drop=True)
+        last3month.index += index3month
+
+        listprodukdata = []
+        for i in produkfix.index:
+            datatanggal = pd.DataFrame(data['tanggal'].loc[data['Assignment'] == i])
+            datatanggal['value'] = 1
+            day = datatanggal.groupby(datatanggal['tanggal'].dt.date).sum()
+            day['tanggal'] = day.index
+            day = day.reset_index(drop=True)
+            day = day.rename(index=str, columns={"Assignment": "jumlah"})
+            day['tanggal'] = pd.to_datetime(day['tanggal'])
+            day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
+            listprodukdata.append(day.to_dict(orient='records'))
+
+        produkfix['DataTanggal'] = listprodukdata
+
+        finaldatatask = {
+            'produkfix': produkfix,
+            'lastmonth': lastmonth,
+            'last3month': last3month
+        }
+
+        return finaldatatask
+
+    def jumlahulasan(datajumlah):
+        tempnama = datajumlah['nama'][0]
+        tempjumlah = 0
+        jumlah = []
+        nama = []
+        for j, i in enumerate(datajumlah['nama']):
+            if i == tempnama:
+                tempjumlah = tempjumlah + 1
+            else:
+                jumlah.append(tempjumlah)
+                nama.append(tempnama)
+                tempjumlah = 1
+                tempnama = i
+
+            if (datajumlah.__len__() - 1) == j:
+                jumlah.append(tempjumlah)
+                nama.append(tempnama)
+
+        produk = pd.DataFrame({'Produk': nama, 'Jumlah': jumlah})
+        return produk
+
+    def sortdata(data):
+        data = data.sort_values(by=['Jumlah'], ascending=False)
+        data = data.reset_index(drop=True)
+        return data
+
+    def produktinggi(data):
+        produktinggidata = data.loc[data['Jumlah'].astype('float64').idxmax()]
+        produktinggidata = {
+            'jumlah': int(produktinggidata['Jumlah']),
+            'nama': produktinggidata['Produk']
+        }
+        produktinggidata = json.dumps(produktinggidata)
+        return produktinggidata
+
+    def produkrendah(data):
+        produkrendahdata = data.loc[data['Jumlah'].astype('float64').idxmin()]
+        produkrendahdata = {
+            'jumlah': int(produkrendahdata['Jumlah']),
+            'nama': produkrendahdata['Produk']
+        }
+        produkrendahdata = json.dumps(produkrendahdata)
+        return produkrendahdata
+
+    current_task.update_state(state='PROGRESS', meta={'status': 'Get Data From Database'})
+
+    produkfixdata = pd.DataFrame(columns={'Produk', 'Jumlah', 'DataTanggal'})
+    lastmonthtemp = pd.DataFrame(columns={'nama', 'Assignment'})
+    last3monthtemp = pd.DataFrame(columns={'nama', 'Assignment'})
+
+    indexmonth = 0
+    index3month = 0
+    statusdata = 0
+
+    if katmodel == 'Sepatu Pria':
+        if katmodel2 == '':
+            dataset = pd.DataFrame(list(models.SepatuPria.objects.values('produk', 'tanggal')))
+            jumproduk = 1
+            datatask = task(dataset, katmodel, jumproduk, indexmonth, index3month)
+
+            produkfixdata = datatask.get('produkfix')
+            produkfixdata = sortdata(produkfixdata)
+            produkfixtinggi = produktinggi(produkfixdata)
+            produkfixrendah = produkrendah(produkfixdata)
+
+            lastmonthtemp = datatask.get('lastmonth')
+            lastmonthtemp = jumlahulasan(lastmonthtemp)
+            lastmonthtinggi = produktinggi(lastmonthtemp)
+
+            last3monthtemp = datatask.get('last3month')
+            last3monthtemp = jumlahulasan(last3monthtemp)
+            last3monthtinggi = produktinggi(last3monthtemp)
+
+            finaldata = {
+                'produk': produkfixdata.to_json(orient='records'),
+                'produktinggi': produkfixtinggi,
+                'produkrendah': produkfixrendah,
+                'lastmonth': lastmonthtinggi,
+                'last3month': last3monthtinggi,
+            }
+
+            return finaldata
+
+        else:
+            loop = katmodel2.split(sep=',')
+            jumproduk = -1
+
+            for m, n in enumerate(loop):
+                loop[m] = n.strip()
+                if loop[m].__len__() is 0 or loop[m].isspace():
+                    continue
+
+                data = pd.DataFrame(list(models.SepatuPria.objects.filter(Q(produk__icontains=loop[m]+' ') | Q(produk__icontains=' '+loop[m]+' ') | Q(produk__icontains=' '+loop[m])).values('produk', 'tanggal')))
+
+                if data.__len__() is 0:
+                    continue
+                else:
+                    statusdata = 1
+
+                datatask = task(data, loop[m], jumproduk, indexmonth, index3month)
+
+                datatemp = datatask.get('produkfix')
+                datatemp['Produk'] = loop[m] + ' ' + datatemp['Produk']
+                produkfixdata = produkfixdata.append(datatemp, sort=False)
+
+                monthtemp = datatask.get('lastmonth')
+                monthtemp['nama'] = loop[m] + ' ' + monthtemp['nama']
+                lastmonthtemp = lastmonthtemp.append(monthtemp, sort=False)
+
+                month3temp = datatask.get('last3month')
+                month3temp['nama'] = loop[m] + ' ' + month3temp['nama']
+                last3monthtemp = last3monthtemp.append(month3temp, sort=False)
+
+                indexmonth = indexmonth + lastmonthtemp.__len__()
+                index3month = index3month + last3monthtemp.__len__()
+
+            if statusdata is 0:
+                return 'FAIL'
+
+            produkfixdata = sortdata(produkfixdata)
+            produkfixtinggi = produktinggi(produkfixdata)
+            produkfixrendah = produkrendah(produkfixdata)
+
+            lastmonthtinggi = jumlahulasan(lastmonthtemp)
+            lastmonthtinggi = produktinggi(lastmonthtinggi)
+
+            last3monthtinggi = jumlahulasan(last3monthtemp)
+            last3monthtinggi = produktinggi(last3monthtinggi)
+
+            finaldata = {
+                'produk': produkfixdata.to_json(orient='records'),
+                'produktinggi': produkfixtinggi,
+                'produkrendah': produkfixrendah,
+                'lastmonth': lastmonthtinggi,
+                'last3month': last3monthtinggi,
+            }
+
+            return finaldata

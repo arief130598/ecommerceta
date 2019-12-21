@@ -35,28 +35,8 @@ def get_task_info(request):
                     'tinggitahun': json.loads(task.info.get('tinggitahun')),
                     'rendahhari': json.loads(task.info.get('rendahhari')),
                     'rendahbulan': json.loads(task.info.get('rendahbulan')),
-                    'rendahtahun': json.loads(task.info.get('rendahtahun'))
-                }
-                return HttpResponse(json.dumps(data), content_type='application/json')
-            elif task.info.get('status') == "Produk Tertinggi dan Terendah":
-                data = {
-                    'state': task.state,
-                    'result': task.info.get('status'),
-                    'produktinggi': json.loads(task.info.get('produktinggi')),
-                    'produkrendah': json.loads(task.info.get('produkrendah')),
-                    'produkmonth': json.loads(task.info.get('produkmonth')),
-                    'produk3month': json.loads(task.info.get('produk3month'))
-                }
-                return HttpResponse(json.dumps(data), content_type='application/json')
-            elif task.info.get('status') == "Jumlah dan Tanggal Produk":
-                list = []
-                for i in task.info.get('listproduk'):
-                    list.append(json.loads(i))
-
-                data = {
-                    'state': task.state,
-                    'result': task.info.get('status'),
-                    'listproduk': list
+                    'rendahtahun': json.loads(task.info.get('rendahtahun')),
+                    'judul': task.info.get('judul')
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -66,9 +46,20 @@ def get_task_info(request):
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
         else:
+            if task.result == 'FAIL':
+                data = {
+                    'status': 'FAIL',
+                    'response': 'Dari keyword yang dicari data tidak ditemukan'
+                }
+                return HttpResponse(json.dumps(data), content_type='application/json')
+
             data = {
                 'state': task.state,
-                'result': json.loads(task.result)
+                'produk': json.loads(task.result.get('produk')),
+                'produktinggi': json.loads(task.result.get('produktinggi')),
+                'produkrendah': json.loads(task.result.get('produkrendah')),
+                'lastmonth': json.loads(task.result.get('lastmonth')),
+                'last3month': json.loads(task.result.get('last3month'))
             }
             return HttpResponse(json.dumps(data), content_type='application/json')
     else:
@@ -77,45 +68,31 @@ def get_task_info(request):
 
 def search(request):
     idtask = 0
-    katmodel = ''
     katmodel2 = ''
 
     box1 = request.POST.get('box1')
     box2 = request.POST.get('box2')
-    box3 = request.POST.get('box3')
+    box3 = request.POST.get('searchkeyword')
 
     if box1 == "men":
         if box2 == 'Clothing':
             print(box2)
         elif box2 == 'Shoes':
             if box3 == '':
-                k = 9
                 katmodel = 'Sepatu Pria'
-                task = totalulasan.delay(k, katmodel, katmodel2)
+                task = totalulasan.delay(katmodel, katmodel2)
                 idtask = task.id
-            elif box3 == 'Adidas':
-                k = 12
+            else:
+                box3 = box3.lower()
                 katmodel = 'Sepatu Pria'
-                katmodel2 = 'Adidas'
-                task = totalulasan.delay(k, katmodel, katmodel2)
+                katmodel2 = box3
+                task = totalulasan.delay(katmodel, katmodel2)
                 idtask = task.id
         else:
             print(box2)
 
-    if katmodel2 == '':
-        kategori = box1 + " > " + box2
-        title = katmodel
-    else:
-        title = katmodel2
-        kategori = box1 + " > " + box2 + " > " + box3
-
-    list_variabel = {
-        'title': title,
-        'kategori': kategori,
-        'task_id': idtask
-    }
 
     if idtask is not 0:
-        return render(request, 'ecommercetrends/search.html', list_variabel)
+        return render(request, 'ecommercetrends/search.html', {'task_id': idtask})
     else:
         return render(request, 'ecommercetrends/search.html')

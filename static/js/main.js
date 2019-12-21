@@ -200,46 +200,7 @@ var tanggal = [
 
 var value = [200, 300, 100];
 
-var mainChart = new Chart($('#main-chart'), {
-  type: 'line',
-  data: {
-    labels: tanggal,
-    datasets: [{
-      backgroundColor: hexToRgba(getStyle('--info'), 10),
-      borderColor: getStyle('--info'),
-      pointHoverBackgroundColor: '#fff',
-      borderWidth: 2,
-      data: value
-    }]
-  },
-  options: {
-    maintainAspectRatio: false,
-    legend: {
-      display: false
-    },
-    scales: {
-      xAxes: [{
-        gridLines: {
-          drawOnChartArea: false
-        }
-      }],
-      yAxes: [{
-        ticks: {
-          beginAtZero: true,
-          maxTicksLimit: 5,
-        }
-      }]
-    },
-    elements: {
-      point: {
-        radius: 0,
-        hitRadius: 10,
-        hoverRadius: 4,
-        hoverBorderWidth: 3
-      }
-    }
-  }
-});
+
 
 var brandBoxChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
 var brandBoxChartOptions = {

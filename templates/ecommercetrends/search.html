@@ -40,28 +40,23 @@
       </a>
       <form action="{% url 'search' %}" method="post">
           {% csrf_token %}
-          <ul class="nav navbar-nav ml-auto">
-            <li class="nav-item px-1">
+          <ul class="navbar-nav" style="margin-right: 200px">
+            <li class="nav-item px-1 col-4">
               <select class="form-control" name="box1" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
                 <option value="">Select Category</option>
                 <option onclick="newdropdown()" value='men'>Men's Fashion</option>
                 <option value='women'>Women's Fashion</option>
               </select>
             </li>
-            <li class="nav-item px-1">
+            <li class="nav-item px-1 col-4">
               <script type="text/javascript">
                 document.write('<select class="form-control" name="box2" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
               </script>
             </li>
-            <li class="nav-item px-1">
-              <script type="text/javascript">
-                document.write('<select class="form-control" name="box3" id="thirdcategory" onchange="javascript: dynamicdropdownclothing(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
-              </script>
+            <li class="nav-item px-1 mr-n4 col-6">
+              <input type="text" class="form-control" name="searchkeyword" placeholder="[Optional] Insert Keyword Separate By  ' , '" aria-label="Keyword" aria-describedby="basic-addon2">
             </li>
-            <div id="dynamicdropdowntag">
-
-            </div>
-            <li class="nav-item px-1 mt-2 mr-4">
+            <li class="nav-item px-1 mt-2">
               <button type="submit" class="btn btn-primary ml-4 mb-2" onclick="newdropdown()">Search</button>
             </li>
           </ul>
@@ -72,65 +67,7 @@
         <div class="container-fluid">
           <div class="animated fadeIn">
             <!-- /.row-->
-            <div class="card">
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-sm-5">
-                    <h4 class="card-title mb-0">{{title}}</h4>
-                    <div class="small text-muted" style="text-transform:capitalize;">{{kategori}}</div>
-                    <div id='totalulasan' class="small text-muted">Total Terjual 1.280.050 Produk</div>
-                  </div>
-                  <!-- /.col-->
-                  <div class="col-sm-7 d-none d-md-block">
-                    <div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">
-                      <label class="btn btn-outline-secondary" onclick="dayChart()">
-                        <input id="option1" type="radio" name="options" autocomplete="off"> Day
-                      </label>
-                      <label class="btn btn-outline-secondary active" onclick="monthChart()">
-                        <input id="option2" type="radio" name="options" autocomplete="off"> Month
-                      </label>
-                      <label class="btn btn-outline-secondary"  onclick="yearChart()">
-                        <input id="option3" type="radio" name="options" autocomplete="off"> Year
-                      </label>
-                    </div>
-                  </div>
-                  <!-- /.col-->
-                </div>
-                <!-- /.row-->
-                <!--Line Chart-->
-                <div class="chart-wrapper" style="height:300px;margin-top:40px;" id="containerchart">
-                    <canvas class="chart" id="main-chart"></canvas>
-                </div>
-                <!--End of Line Chart-->
-              </div>
-              <div class="card-footer">
-                <div class="row text-center">
-                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
-                    <div class="text-muted">Penjualan Tertinggi (Hari)</div>
-                    <strong id='tinggihari' >4.666 (21 Mei 2019)</strong>
-                  </div>
-                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
-                      <div class="text-muted">Penjualan Tertinggi (Bulan)</div>
-                      <strong id='tinggibulan'>14.000 (Mei 2019)</strong>
-                  </div>
-                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
-                    <div class="text-muted">Penjualan Tertinggi (Tahun)</div>
-                    <strong  id='tinggitahun'>29.703 (2019)</strong>
-                  </div>
-                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
-                    <div class="text-muted">Penjualan Terendah (Hari)</div>
-                    <strong id='rendahhari'>290 (20 April 2018)</strong>
-                  </div>
-                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
-                      <div class="text-muted">Penjualan Terendah (Bulan)</div>
-                      <strong id='rendahbulan'>2.970 (April 2018)</strong>
-                  </div>
-                  <div class="col-sm-12 col-md mb-sm-2 mb-0">
-                    <div class="text-muted">Penjualan Terendah (Tahun)</div>
-                    <strong id='rendahtahun'>7.000 (2018)</strong>
-                  </div>
-                </div>
-              </div>
+            <div  id='mainproduk' class="card">
             </div>
             <!-- /.row-->
             <div class="row">

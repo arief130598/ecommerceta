@@ -5,27 +5,75 @@ var valuetanggal = [];
 var valuemonth = [];
 var valueyear = [];
 
-var tanggalproduk = [];
-var valueproduk = [];
+var listchart = [];
 
-function yearChart() {
-  mainChart.data.datasets[0].data =valueyear;
-  mainChart.data.labels = year;
-  mainChart.update();
+function updateChart(tipe, iditem) {
+
+    var tanggaldata = [];
+    var valuedata = [];
+
+    if(tipe == 'tanggal'){
+        tanggaldata = tanggal[iditem];
+        valuedata = valuetanggal[iditem];
+    }else if(tipe == 'bulan'){
+        tanggaldata = month[iditem];
+        valuedata = valuemonth[iditem];
+    }else{
+        tanggaldata = year[iditem];
+        valuedata = valueyear[iditem];
+    }
+
+    listchart[iditem].data.datasets[0].data = valuedata;
+    listchart[iditem].data.labels = tanggaldata;
+    listchart[iditem].update();
 }
 
-function monthChart() {
-  mainChart.data.datasets[0].data = valuemonth;
-  mainChart.data.labels = month;
-  mainChart.update();
-}
+function addmainchart(idx, idelement){
 
-function dayChart() {
-  mainChart.data.datasets[0].data =valuetanggal;
-  mainChart.data.labels = tanggal;
-  mainChart.update();
-}
+    var ctx = document.getElementById(idelement);
+    var idchart = new Chart($(ctx), {
+      type: 'line',
+      data: {
+        labels: month[idx],
+        datasets: [{
+          backgroundColor: hexToRgba(getStyle('--info'), 10),
+          borderColor: getStyle('--info'),
+          pointHoverBackgroundColor: '#fff',
+          borderWidth: 2,
+          data: valuemonth[idx]
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          xAxes: [{
+            gridLines: {
+              drawOnChartArea: false
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+              maxTicksLimit: 5,
+            }
+          }]
+        },
+        elements: {
+          point: {
+            radius: 0,
+            hitRadius: 10,
+            hoverRadius: 4,
+            hoverBorderWidth: 3
+          }
+        }
+      }
+    });
 
+    listchart.push(idchart);
+}
 
 var tanggalproduk = [];
 var valueproduk= [];
@@ -62,6 +110,7 @@ function addlistchart(item, y){
             ticks: {
                 beginAtZero: true,
                 maxTicksLimit: 5,
+                max: 50
             }
           }]
         },
@@ -77,7 +126,14 @@ function addlistchart(item, y){
     });
 }
 
-var statebag = 0;
+var iproduk = 0;
+var judultemp = '';
+
+function homepage(status){
+    alert(status);
+    window.location = "http://127.0.0.1:8000";
+}
+
 $(function get_task() {
     $.ajax({
        url: url,
@@ -90,73 +146,151 @@ $(function get_task() {
            else if (data.state == 'PROGRESS') {
                 console.log(data.result);
                 $("#statusloading").text(data.result);
-                if(data.result == "Bag of Word" && statebag == 0){
-                    $.each(data.day, function (i, item) {
-                        tanggal.push(item.tanggal);
-                        valuetanggal.push(item.value);
-                    });
+                if(data.result == "Bag of Word"){
+                    if(judultemp != data.judul){
+                        judultemp = data.judul;
 
-                    $.each(data.month, function (i, item) {
-                        month.push(item.tanggal);
-                        valuemonth.push(item.value);
-                    });
+                        var tanggaltemp = [];
+                        var bulantemp = [];
+                        var tahuntemp = [];
 
-                    $.each(data.year, function (i, item) {
-                        year.push(item.tanggal);
-                        valueyear.push(item.value);
-                    });
-                    monthChart();
-                    $("#tinggihari").text(data.tinggihari.tanggal + " (" + data.tinggihari.value + ")");
-                    $("#tinggibulan").text(data.tinggibulan.tanggal + " (" + data.tinggibulan.value + ")");
-                    $("#tinggitahun").text(data.tinggitahun.tanggal + " (" + data.tinggitahun.value + ")");
-                    $("#rendahhari").text(data.rendahhari.tanggal + " (" + data.rendahhari.value + ")");
-                    $("#rendahbulan").text(data.rendahbulan.tanggal + " (" + data.rendahbulan.value + ")");
-                    $("#rendahtahun").text(data.rendahtahun.tanggal + " (" + data.rendahtahun.value + ")");
-                    statebag = 1;
-                }
-                else if(data.result == "Produk Tertinggi dan Terendah"){
-                    $("#produktinggi").text(data.produktinggi.nama);
-                    $("#valuetinggi").text(data.produktinggi.jumlah);
-                    $("#produktinggi3").text(data.produk3month.nama);
-                    $("#valuetinggi3").text(data.produk3month.jumlah);
-                    $("#produktinggi1").text(data.produkmonth.nama);
-                    $("#valuetinggi1").text(data.produkmonth.jumlah);
-                    $("#produkrendah").text(data.produkrendah.nama);
-                    $("#valuerendah").text(data.produkrendah.jumlah);
-                }
-                else if(data.result == "Jumlah dan Tanggal Produk"){
-                    $.each(data.listproduk, function (i, item) {
-                        var tempvalue = [];
-                        var temptanggal = [];
+                        var itemtanggaltemp = [];
+                        var itembulantemp = [];
+                        var itemtahuntemp = [];
 
-                        $.each(item, function (j, order) {
-                            temptanggal.push(order.tanggal);
-                            tempvalue.push(order.value);
+                        $.each(data.day, function (i, item) {
+                            tanggaltemp.push(item.tanggal);
+                            itemtanggaltemp.push(item.value);
                         });
 
-                        tanggalproduk.push(temptanggal);
-                        valueproduk.push(tempvalue);
-                    });
+                        $.each(data.month, function (i, item) {
+                            bulantemp.push(item.tanggal);
+                            itembulantemp.push(item.value);
+                        });
+
+                        $.each(data.year, function (i, item) {
+                            tahuntemp.push(item.tanggal);
+                            itemtahuntemp.push(item.value);
+                        });
+
+                        tanggal.push(tanggaltemp);
+                        month.push(bulantemp);
+                        year.push(tahuntemp);
+                        valuetanggal.push(itemtanggaltemp);
+                        valuemonth.push(itembulantemp);
+                        valueyear.push(itemtahuntemp);
+                        tgl = 'tanggal';
+                        bln = 'bulan';
+                        yr = 'tahun';
+
+                        var maincharttemplate = '' +
+                              '<div class="card-body">' +
+                                '<div class="row">' +
+                                  '<div class="col-sm-5">' +
+                                   '<h4 class="card-title mb-0" style="text-transform:capitalize;">' + data.judul +'</h4>' +
+                                    '<!-- <div id="totalterjual" class="small text-muted">Total Terjual' + data.terjual  +'Produk</div> -->' +
+                                  '</div>' +
+                                  '<!-- /.col-->' +
+                                 '<div class="col-sm-7 d-none d-md-block">' +
+                                    '<div class="btn-group btn-group-toggle float-right mr-3" data-toggle="buttons">' +
+                                      '<label class="btn btn-outline-secondary" onclick="updateChart(\'' + tgl +'\',' + iproduk + ')">' +
+                                        '<input id="option1" type="radio" name="options" autocomplete="off"> Day' +
+                                      '</label>' +
+                                      '<label class="btn btn-outline-secondary active" onclick="updateChart(\'' + bln +'\',' + iproduk + ')">' +
+                                        '<input id="option2" type="radio" name="options" autocomplete="off"> Month' +
+                                      '</label>' +
+                                      '<label class="btn btn-outline-secondary"  onclick="updateChart(\'' + yr +'\',' + iproduk + ')">' +
+                                        '<input id="option3" type="radio" name="options" autocomplete="off"> Year' +
+                                      '</label>' +
+                                    '</div>' +
+                                  '</div>' +
+                                  '<!-- /.col-->' +
+                                '</div>' +
+                                '<!-- /.row-->' +
+                                '<!--Line Chart-->' +
+                                '<div class="chart-wrapper" style="height:300px;margin-top:40px;" id="containerchart">' +
+                                    '<canvas class="chart" id="'+ data.judul +'"></canvas>' +
+                                '</div>' +
+                                '<!--End of Line Chart-->' +
+                              '</div>' +
+                              '<div class="card-footer">' +
+                                '<div class="row text-center">' +
+                                  '<div class="col-sm-12 col-md mb-sm-2 mb-0">' +
+                                    '<div class="text-muted">Penjualan Tertinggi (Hari)</div>' +
+                                    '<strong id="tinggihari" >'+ data.tinggihari.tanggal + ' (' + data.tinggihari.value + ')' +'</strong>' +
+                                  '</div>' +
+                                  '<div class="col-sm-12 col-md mb-sm-2 mb-0">' +
+                                      '<div class="text-muted">Penjualan Tertinggi (Bulan)</div>' +
+                                      '<strong id="tinggibulan">'+ data.tinggibulan.tanggal + " (" + data.tinggibulan.value + ")" +'</strong>' +
+                                  '</div>' +
+                                  '<div class="col-sm-12 col-md mb-sm-2 mb-0">' +
+                                    '<div class="text-muted">Penjualan Tertinggi (Tahun)</div>' +
+                                    '<strong  id="tinggitahun">'+ data.tinggitahun.tanggal + " (" + data.tinggitahun.value + ")" +'</strong>' +
+                                  '</div>' +
+                                  '<div class="col-sm-12 col-md mb-sm-2 mb-0">' +
+                                    '<div class="text-muted">Penjualan Terendah (Hari)</div>' +
+                                    '<strong id="rendahhari">'+ data.rendahhari.tanggal + " (" + data.rendahhari.value + ")" +'</strong>' +
+                                  '</div>' +
+                                  '<div class="col-sm-12 col-md mb-sm-2 mb-0">' +
+                                      '<div class="text-muted">Penjualan Terendah (Bulan)</div>' +
+                                      '<strong id="rendahbulan">'+ data.rendahbulan.tanggal + " (" + data.rendahbulan.value + ")" +'</strong>' +
+                                  '</div>' +
+                                  '<div class="col-sm-12 col-md mb-sm-2 mb-0">' +
+                                    '<div class="text-muted">Penjualan Terendah (Tahun)</div>' +
+                                    '<strong id="rendahtahun">'+ data.rendahtahun.tanggal + " (" + data.rendahtahun.value + ")" +'</strong>' +
+                                  '</div>' +
+                                '</div>' +
+                              '</div>';
+
+
+                        $("#mainproduk").append(maincharttemplate);
+                        addmainchart(iproduk, data.judul);
+                        iproduk += 1;
+                    }
                 }
            }else{
+                if(data.status == 'FAIL'){
+                    homepage(data.response);
+                }
+
                 var total = 0;
-                $.each(data.result, function (i, item) {
-                    total += item.Jumlah;
+
+                var produk = [];
+                var jumlah = [];
+
+                $.each(data.produk, function (i, item) {
+                    var tempvalue = [];
+                    var temptanggal = [];
+
+                    $.each(item.DataTanggal, function (j, order) {
+                        temptanggal.push(order.tanggal);
+                        tempvalue.push(order.value);
+                    });
+
+                    tanggalproduk.push(temptanggal);
+                    valueproduk.push(tempvalue);
+                    produk.push(item.Produk);
+                    jumlah.push(item.Jumlah);
                 });
-                $("#totalulasan").text("Total Terjual " + total + " Produk");
-                var x=1,y=0;
-                $.each(data.result, function (i, item) {
-                    var percent = item.Jumlah / total * 100;
+
+                $.each(jumlah, function (i, item) {
+                    total += item;
+                });
+
+                var x=1;
+
+                for(var i=0; i<produk.length; i++){
+                    var percent = jumlah[i] / total * 100;
 
                     var canvastemplate = "" +
                         '<div class="chart-wrapper" style="height:130px;">' +
-                            '<canvas class="chart" id="'+ item.Produk +'"></canvas>' +
+                            '<canvas class="chart" id="'+ produk[i] +'"></canvas>' +
                         '</div>';
                     var listvaluetemplate = "" +
                         '<div class="progress-group" style="margin-top: 2%;">' +
                           '<div class="progress-group-header align-items-end">' +
-                            '<a href="#" data-toggle="modal" data-target="#exampleModalCenter" style="text-transform:capitalize;">' + x + '. ' + item.Produk + '</a>' +
-                            '<div class="ml-auto font-weight-bold mr-2">' + item.Jumlah + '</div>' +
+                            '<a data-toggle="modal" data-target="#exampleModalCenter" style="text-transform:capitalize;">' + x + '. ' + produk[i] + '</a>' +
+                            '<div class="ml-auto font-weight-bold mr-2">' + jumlah[i] + '</div>' +
                             '<div class="text-muted small">' + Math.round(percent * 100) / 100 + '%</div>' +
                           '</div>' +
                           '<div class="progress-group-bars">' +
@@ -168,10 +302,18 @@ $(function get_task() {
 
                     $("#listvalue").append(listvaluetemplate);
                     $("#listvalue").append(canvastemplate);
-                    addlistchart(item.Produk, y);
+                    addlistchart(produk[i], i);
                     x++;
-                    y++;
-                });
+                }
+
+                $("#produktinggi").text(data.produktinggi.nama);
+                $("#valuetinggi").text(data.produktinggi.jumlah);
+                $("#produktinggi3").text(data.last3month.nama);
+                $("#valuetinggi3").text(data.last3month.jumlah);
+                $("#produktinggi1").text(data.lastmonth.nama);
+                $("#valuetinggi1").text(data.lastmonth.jumlah);
+                $("#produkrendah").text(data.produkrendah.nama);
+                $("#valuerendah").text(data.produkrendah.jumlah);
 
                 $("html").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});
                 $("body").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});
@@ -188,6 +330,7 @@ $(function get_task() {
        },
        error: function (data) {
            console.log("Error");
+           homepage('Error saat proses pencarian, coba kembali');
        }
    });
 });

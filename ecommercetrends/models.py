@@ -31,23 +31,24 @@ class SepatuWanita(AbstractUlasan):
         verbose_name_plural = 'Sepatu Wanita'
 
 
-class ShopeeTasWanita(models.Model):
+class ShopeeSepatuPria(models.Model):
     toko = models.CharField(max_length=255)
     terjual = models.IntegerField(default=0)
     jumlahulasan = models.IntegerField(default=0)
     harga = models.IntegerField(default=0)
     produk = models.CharField(max_length=255)
-    url = models.TextField(null=True, blank=True)
+    url = models.TextField()
     asaltoko = models.CharField(max_length=255, null=True, blank=True)
 
 
-class ShopeeTasWanitaUlasan(models.Model):
+class ShopeeSepatuPriaUlasan(models.Model):
     nama = models.TextField(null=True, blank=True)
     variasi = models.CharField(max_length=255, null=True, blank=True)
     rating = models.IntegerField(default=1)
     tanggal = models.DateField()
     toko = models.CharField(max_length=255)
     produk = models.CharField(max_length=255)
+    url = models.TextField()
     review = models.TextField(null=True, blank=True)
 
 
