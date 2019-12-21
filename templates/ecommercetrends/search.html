@@ -23,6 +23,7 @@
     <!-- Main styles for this application-->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <link href="{% static 'css/loading.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker.css' %}" rel="stylesheet">
   </head>
   <body>
     <div id='loadingbar' style="margin-top: 30%">
@@ -40,20 +41,26 @@
       </a>
       <form action="{% url 'search' %}" method="post">
           {% csrf_token %}
-          <ul class="navbar-nav" style="margin-right: 200px">
-            <li class="nav-item px-1 col-4">
+          <ul class="navbar-nav" style="margin-right: 110px">
+            <li class="nav-item px-1 col-2">
+              <input type="text" placeholder="Date Start" name="datestart" class="form-control date-picker" id="date-picker" aria-label="datestart">
+            </li>
+            <li class="nav-item px-1 col-2">
+              <input type="text" placeholder="Date End" name="dateend" class="form-control date-picker-2" id="date date-picker-2" aria-label="dateend">
+            </li>
+            <li class="nav-item px-1 col-2">
               <select class="form-control" name="box1" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
                 <option value="">Select Category</option>
                 <option onclick="newdropdown()" value='men'>Men's Fashion</option>
                 <option value='women'>Women's Fashion</option>
               </select>
             </li>
-            <li class="nav-item px-1 col-4">
+            <li class="nav-item px-1 col-2">
               <script type="text/javascript">
                 document.write('<select class="form-control" name="box2" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
               </script>
             </li>
-            <li class="nav-item px-1 mr-n4 col-6">
+            <li class="nav-item px-1 mr-n4 col-4">
               <input type="text" class="form-control" name="searchkeyword" placeholder="[Optional] Insert Keyword Separate By  ' , '" aria-label="Keyword" aria-describedby="basic-addon2">
             </li>
             <li class="nav-item px-1 mt-2">
@@ -162,10 +169,14 @@
     </footer>
     <!-- CoreUI and necessary plugins-->
     <script src="{% static "js/jquery/js/jquery.min.js" %}"></script>
+    <script src="{% static "js/moment.min.js" %}"></script>
+    <script src="{% static "js/daterangepicker.js" %}"></script>
     <script src="{% static "js/bootstrap/js/bootstrap.min.js" %}"></script>
     <script src="{% static "js/@coreui/coreui/js/coreui.min.js" %}"></script>
     <!-- Plugins and scripts required by this view-->
     <script src="{% static "js/chart.js/js/Chart.js" %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.4"></script>
     <script src="{% static "js/@coreui/coreui-plugin-chartjs-custom-tooltips/js/custom-tooltips.min.js" %}"></script>
     <script src="{% static "js/main.js" %}"></script>
     <script src="{% static "js/dynamicdropdown.js" %}"></script>

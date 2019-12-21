@@ -11,11 +11,13 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import silhouette_score
+from datetime import datetime
 
 from celery import shared_task, current_task
 
 # Library for debugging celery
 '''from celery import current_app
+
 current_app.conf.CELERY_ALWAYS_EAGER = True
 current_app.conf.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True'''
 
@@ -23,8 +25,7 @@ from ecommercetrends import models
 
 
 @shared_task
-def totalulasan(katmodel, katmodel2):
-
+def totalulasan(katmodel, katmodel2, datestart, dateend):
     def task(dataset, judul, jumproduk, indexmonth, index3month):
         dataset = dataset.rename(index=str, columns={"produk": "nama", "tanggal": "tanggal"})
 
@@ -52,6 +53,18 @@ def totalulasan(katmodel, katmodel2):
         }
         rendahhari = json.dumps(rendahhari)
 
+        movingaveragedataday = []
+        for k, l in enumerate(day['value']):
+            if k >= 6:
+                tempaverage = (day['value'][k] + day['value'][k - 6] + day['value'][k - 5] + day['value'][k - 4] +
+                               day['value'][k - 3] + day['value'][k - 2] + day['value'][k - 1]) / 7
+                movingaveragedataday.append(tempaverage)
+            else:
+                movingaveragedataday.append(0)
+
+        maday = pd.DataFrame(movingaveragedataday, columns=['value'])
+        maday = maday.to_json(orient='records')
+
         day = day.to_json(orient='records')
 
         month = dataset.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
@@ -61,6 +74,17 @@ def totalulasan(katmodel, katmodel2):
         month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
         month = month[month['value'] != 0]
         month = month.reset_index(drop=True)
+
+        movingaveragedatamonth = []
+        for k, l in enumerate(month['value']):
+            if k >= 5:
+                tempaverage = (month['value'][k] + month['value'][k - 5] + month['value'][k - 4] + month['value'][k - 3] + month['value'][k - 2] + month['value'][k - 1]) / 5
+                movingaveragedatamonth.append(tempaverage)
+            else:
+                movingaveragedatamonth.append(0)
+
+        mamonth = pd.DataFrame(movingaveragedatamonth, columns=['value'])
+        mamonth = mamonth.to_json(orient='records')
 
         tinggibulan = month.loc[month['value'].idxmax()]
         tinggibulan = {
@@ -82,6 +106,17 @@ def totalulasan(katmodel, katmodel2):
         year['tanggal'] = year.index
         year = year.reset_index(drop=True)
         year = year.rename(index=str, columns={"Assignment": "jumlah"})
+
+        movingaveragedatayear = []
+        for k, l in enumerate(year['value']):
+            if k >= 2:
+                tempaverage = (year['value'][k] + year['value'][k - 2] + year['value'][k - 1]) / 3
+                movingaveragedatayear.append(tempaverage)
+            else:
+                movingaveragedatayear.append(0)
+
+        mayear = pd.DataFrame(movingaveragedatayear, columns=['value'])
+        mayear = mayear.to_json(orient='records')
 
         tinggitahun = year.loc[year['value'].idxmax()]
         tinggitahun = {
@@ -105,9 +140,12 @@ def totalulasan(katmodel, katmodel2):
                                         'tinggitahun': tinggitahun,
                                         'rendahhari': rendahhari, 'rendahbulan': rendahbulan,
                                         'rendahtahun': rendahtahun,
-                                        'judul': judul})
+                                        'judul': judul,
+                                        'maday': maday,
+                                        'mamonth': mamonth,
+                                        'mayear': mayear})
 
-        time.sleep(10)
+        time.sleep(15)
 
         def feature_extraction(dataset):
             # 0 tokenize
@@ -252,13 +290,15 @@ def totalulasan(katmodel, katmodel2):
         for i in produkfix.index:
             datatanggal = pd.DataFrame(data['tanggal'].loc[data['Assignment'] == i])
             datatanggal['value'] = 1
-            day = datatanggal.groupby(datatanggal['tanggal'].dt.date).sum()
-            day['tanggal'] = day.index
-            day = day.reset_index(drop=True)
-            day = day.rename(index=str, columns={"Assignment": "jumlah"})
-            day['tanggal'] = pd.to_datetime(day['tanggal'])
-            day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
-            listprodukdata.append(day.to_dict(orient='records'))
+
+            month = datatanggal.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
+            month['tanggal'] = month.index
+            month = month.reset_index(drop=True)
+            month = month.rename(index=str, columns={"Assignment": "jumlah"})
+            month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
+            month = month[month['value'] != 0]
+            month = month.reset_index(drop=True)
+            listprodukdata.append(month.to_dict(orient='records'))
 
         produkfix['DataTanggal'] = listprodukdata
 
@@ -320,13 +360,20 @@ def totalulasan(katmodel, katmodel2):
     lastmonthtemp = pd.DataFrame(columns={'nama', 'Assignment'})
     last3monthtemp = pd.DataFrame(columns={'nama', 'Assignment'})
 
+    if datestart.__len__() == 0:
+        datestart = '2000-01-01'
+        datestart = datetime.strptime(datestart, '%Y-%m-%d')
+    if dateend.__len__() == 0:
+        dateend = '2020-12-12'
+        dateend = datetime.strptime(dateend, '%Y-%m-%d')
+
     indexmonth = 0
     index3month = 0
     statusdata = 0
 
     if katmodel == 'Sepatu Pria':
         if katmodel2 == '':
-            dataset = pd.DataFrame(list(models.SepatuPria.objects.values('produk', 'tanggal')))
+            dataset = pd.DataFrame(list(models.SepatuPria.objects.filter(tanggal__range=[datestart, dateend]).values('produk', 'tanggal')))
             jumproduk = 1
             datatask = task(dataset, katmodel, jumproduk, indexmonth, index3month)
 
@@ -362,7 +409,9 @@ def totalulasan(katmodel, katmodel2):
                 if loop[m].__len__() is 0 or loop[m].isspace():
                     continue
 
-                data = pd.DataFrame(list(models.SepatuPria.objects.filter(Q(produk__icontains=loop[m]+' ') | Q(produk__icontains=' '+loop[m]+' ') | Q(produk__icontains=' '+loop[m])).values('produk', 'tanggal')))
+                data = pd.DataFrame(list(models.SepatuPria.objects.filter(
+                    Q(produk__icontains=loop[m] + ' ') | Q(produk__icontains=' ' + loop[m] + ' ') | Q(
+                        produk__icontains=' ' + loop[m])).filter(tanggal__range=[datestart, dateend]).values('produk', 'tanggal')))
 
                 if data.__len__() is 0:
                     continue

@@ -5,25 +5,34 @@ var valuetanggal = [];
 var valuemonth = [];
 var valueyear = [];
 
+var mavaluetanggal = [];
+var mavaluemonth = [];
+var mavalueyear = [];
+
 var listchart = [];
 
 function updateChart(tipe, iditem) {
 
     var tanggaldata = [];
     var valuedata = [];
+    var mavaluedata = [];
 
     if(tipe == 'tanggal'){
         tanggaldata = tanggal[iditem];
         valuedata = valuetanggal[iditem];
+        mavaluedata = mavaluetanggal[iditem];
     }else if(tipe == 'bulan'){
         tanggaldata = month[iditem];
         valuedata = valuemonth[iditem];
+        mavaluedata = mavaluemonth[iditem];
     }else{
         tanggaldata = year[iditem];
         valuedata = valueyear[iditem];
+        mavaluedata = mavalueyear[iditem];
     }
 
     listchart[iditem].data.datasets[0].data = valuedata;
+    listchart[iditem].data.datasets[1].data = mavaluedata;
     listchart[iditem].data.labels = tanggaldata;
     listchart[iditem].update();
 }
@@ -41,6 +50,12 @@ function addmainchart(idx, idelement){
           pointHoverBackgroundColor: '#fff',
           borderWidth: 2,
           data: valuemonth[idx]
+        }, {
+          backgroundColor: hexToRgba(getStyle('--info'), 10),
+          borderColor: '#FF0000',
+          pointHoverBackgroundColor: '#fff',
+          borderWidth: 2,
+          data: mavaluemonth[idx]
         }]
       },
       options: {
@@ -68,6 +83,29 @@ function addmainchart(idx, idelement){
             hoverRadius: 4,
             hoverBorderWidth: 3
           }
+        },
+        plugins: {
+            zoom: {
+                // Container for pan options
+                pan: {
+                    // Boolean to enable panning
+                    enabled: true,
+
+                    // Panning directions. Remove the appropriate direction to disable
+                    // Eg. 'y' would only allow panning in the y direction
+                    mode: 'xy'
+                },
+
+                // Container for zoom options
+                zoom: {
+                    // Boolean to enable zooming
+                    enabled: true,
+
+                    // Zooming directions. Remove the appropriate direction to disable
+                    // Eg. 'y' would only allow zooming in the y direction
+                    mode: 'xy',
+                }
+            }
         }
       }
     });
@@ -110,7 +148,7 @@ function addlistchart(item, y){
             ticks: {
                 beginAtZero: true,
                 maxTicksLimit: 5,
-                max: 50
+                max: 150
             }
           }]
         },
@@ -121,6 +159,29 @@ function addlistchart(item, y){
             hoverRadius: 4,
             hoverBorderWidth: 3
           }
+        },
+        plugins: {
+            zoom: {
+                // Container for pan options
+                pan: {
+                    // Boolean to enable panning
+                    enabled: true,
+
+                    // Panning directions. Remove the appropriate direction to disable
+                    // Eg. 'y' would only allow panning in the y direction
+                    mode: 'xy'
+                },
+
+                // Container for zoom options
+                zoom: {
+                    // Boolean to enable zooming
+                    enabled: true,
+
+                    // Zooming directions. Remove the appropriate direction to disable
+                    // Eg. 'y' would only allow zooming in the y direction
+                    mode: 'xy',
+                }
+            }
         }
       }
     });
@@ -158,6 +219,10 @@ $(function get_task() {
                         var itembulantemp = [];
                         var itemtahuntemp = [];
 
+                        var maitemtanggaltemp = [];
+                        var maitembulantemp = [];
+                        var maitemtahuntemp = [];
+
                         $.each(data.day, function (i, item) {
                             tanggaltemp.push(item.tanggal);
                             itemtanggaltemp.push(item.value);
@@ -173,12 +238,27 @@ $(function get_task() {
                             itemtahuntemp.push(item.value);
                         });
 
+                        $.each(data.maday, function (i, item) {
+                            maitemtanggaltemp.push(item.value);
+                        });
+
+                        $.each(data.mamonth, function (i, item) {
+                            maitembulantemp.push(item.value);
+                        });
+
+                        $.each(data.mayear, function (i, item) {
+                            maitemtahuntemp.push(item.value);
+                        });
+
                         tanggal.push(tanggaltemp);
                         month.push(bulantemp);
                         year.push(tahuntemp);
                         valuetanggal.push(itemtanggaltemp);
                         valuemonth.push(itembulantemp);
                         valueyear.push(itemtahuntemp);
+                        mavaluetanggal.push(maitemtanggaltemp);
+                        mavaluemonth.push(maitembulantemp);
+                        mavalueyear.push(maitemtahuntemp);
                         tgl = 'tanggal';
                         bln = 'bulan';
                         yr = 'tahun';

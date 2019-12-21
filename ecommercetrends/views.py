@@ -36,7 +36,10 @@ def get_task_info(request):
                     'rendahhari': json.loads(task.info.get('rendahhari')),
                     'rendahbulan': json.loads(task.info.get('rendahbulan')),
                     'rendahtahun': json.loads(task.info.get('rendahtahun')),
-                    'judul': task.info.get('judul')
+                    'judul': task.info.get('judul'),
+                    'maday': json.loads(task.info.get('maday')),
+                    'mamonth': json.loads(task.info.get('mamonth')),
+                    'mayear': json.loads(task.info.get('mayear'))
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -45,7 +48,7 @@ def get_task_info(request):
                     'result': task.info.get('status')
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
-        else:
+        elif task.state == 'SUCCESS':
             if task.result == 'FAIL':
                 data = {
                     'status': 'FAIL',
@@ -62,6 +65,12 @@ def get_task_info(request):
                 'last3month': json.loads(task.result.get('last3month'))
             }
             return HttpResponse(json.dumps(data), content_type='application/json')
+        else:
+            data = {
+                'state': task.state,
+                'result': task.result
+            }
+            return HttpResponse(json.dumps(data), content_type='application/json')
     else:
         return HttpResponse('No job id given.')
 
@@ -70,6 +79,8 @@ def search(request):
     idtask = 0
     katmodel2 = ''
 
+    datestart = request.POST.get('datestart')
+    dateend = request.POST.get('dateend')
     box1 = request.POST.get('box1')
     box2 = request.POST.get('box2')
     box3 = request.POST.get('searchkeyword')
@@ -80,13 +91,13 @@ def search(request):
         elif box2 == 'Shoes':
             if box3 == '':
                 katmodel = 'Sepatu Pria'
-                task = totalulasan.delay(katmodel, katmodel2)
+                task = totalulasan.delay(katmodel, katmodel2, datestart, dateend)
                 idtask = task.id
             else:
                 box3 = box3.lower()
                 katmodel = 'Sepatu Pria'
                 katmodel2 = box3
-                task = totalulasan.delay(katmodel, katmodel2)
+                task = totalulasan.delay(katmodel, katmodel2, datestart, dateend)
                 idtask = task.id
         else:
             print(box2)
