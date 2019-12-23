@@ -33,8 +33,12 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
         dataset['value'] = 1
 
         day = dataset.groupby(dataset['tanggal'].dt.date).sum()
+        day = day.reindex(pd.date_range(day.index.min(), day.index.max()), fill_value=0)
+        tempdaymin = day.index.min()
+        tempdaymax = day.index.max()
         day['tanggal'] = day.index
         day = day.reset_index(drop=True)
+        tempday = day
         day = day.rename(index=str, columns={"Assignment": "jumlah"})
         day['tanggal'] = pd.to_datetime(day['tanggal'])
         day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
@@ -67,12 +71,11 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
 
         day = day.to_json(orient='records')
 
-        month = dataset.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
+        month = tempday.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
         month['tanggal'] = month.index
         month = month.reset_index(drop=True)
         month = month.rename(index=str, columns={"Assignment": "jumlah"})
         month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
-        month = month[month['value'] != 0]
         month = month.reset_index(drop=True)
 
         movingaveragedatamonth = []
@@ -102,7 +105,7 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
 
         month = month.to_json(orient='records')
 
-        year = dataset.groupby(dataset['tanggal'].dt.year).sum()
+        year = tempday.groupby(tempday['tanggal'].dt.year).sum()
         year['tanggal'] = year.index
         year = year.reset_index(drop=True)
         year = year.rename(index=str, columns={"Assignment": "jumlah"})
@@ -286,26 +289,48 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
         last3month = last3month.reset_index(drop=True)
         last3month.index += index3month
 
+        maxyaxis = 0
+        # Mencari data tanggal untuk setiap jenis produk
         listprodukdata = []
+        listprodukdatama = []
         for i in produkfix.index:
             datatanggal = pd.DataFrame(data['tanggal'].loc[data['Assignment'] == i])
             datatanggal['value'] = 1
 
-            month = datatanggal.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
+            day = datatanggal.groupby(datatanggal['tanggal'].dt.date).sum()
+            day = day.reindex(pd.date_range(tempdaymin, tempdaymax), fill_value=0)
+            day['tanggal'] = day.index
+
+            month = day.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
             month['tanggal'] = month.index
             month = month.reset_index(drop=True)
             month = month.rename(index=str, columns={"Assignment": "jumlah"})
             month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
-            month = month[month['value'] != 0]
             month = month.reset_index(drop=True)
+            if month['value'].max() > maxyaxis:
+                maxyaxis = month['value'].max()
+
+            movingaveragedatamonth = []
+            for k, l in enumerate(month['value']):
+                if k >= 5:
+                    tempaverage = (month['value'][k] + month['value'][k - 5] + month['value'][k - 4] + month['value'][
+                        k - 3] + month['value'][k - 2] + month['value'][k - 1]) / 5
+                    movingaveragedatamonth.append(tempaverage)
+                else:
+                    movingaveragedatamonth.append(0)
+
+            mamonth = pd.DataFrame(movingaveragedatamonth, columns=['value'])
+            listprodukdatama.append(mamonth.to_dict(orient='records'))
             listprodukdata.append(month.to_dict(orient='records'))
 
         produkfix['DataTanggal'] = listprodukdata
+        produkfix['DataTanggalMA'] = listprodukdatama
 
         finaldatatask = {
             'produkfix': produkfix,
             'lastmonth': lastmonth,
-            'last3month': last3month
+            'last3month': last3month,
+            'yaxis': maxyaxis
         }
 
         return finaldatatask
@@ -390,12 +415,15 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
             last3monthtemp = jumlahulasan(last3monthtemp)
             last3monthtinggi = produktinggi(last3monthtemp)
 
+            yaxis = datatask.get('yaxis')
+
             finaldata = {
                 'produk': produkfixdata.to_json(orient='records'),
                 'produktinggi': produkfixtinggi,
                 'produkrendah': produkfixrendah,
                 'lastmonth': lastmonthtinggi,
                 'last3month': last3monthtinggi,
+                'yaxis': yaxis,
             }
 
             return finaldata
@@ -403,6 +431,7 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
         else:
             loop = katmodel2.split(sep=',')
             jumproduk = -1
+            yaxistemp = []
 
             for m, n in enumerate(loop):
                 loop[m] = n.strip()
@@ -419,6 +448,8 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
                     statusdata = 1
 
                 datatask = task(data, loop[m], jumproduk, indexmonth, index3month)
+
+                yaxistemp.append(datatask.get('yaxis'))
 
                 datatemp = datatask.get('produkfix')
                 datatemp['Produk'] = loop[m] + ' ' + datatemp['Produk']
@@ -438,6 +469,8 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
             if statusdata is 0:
                 return 'FAIL'
 
+            yaxis = max(yaxistemp).astype(str)
+
             produkfixdata = sortdata(produkfixdata)
             produkfixtinggi = produktinggi(produkfixdata)
             produkfixrendah = produkrendah(produkfixdata)
@@ -454,6 +487,7 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
                 'produkrendah': produkfixrendah,
                 'lastmonth': lastmonthtinggi,
                 'last3month': last3monthtinggi,
+                'yaxis': yaxis,
             }
 
             return finaldata

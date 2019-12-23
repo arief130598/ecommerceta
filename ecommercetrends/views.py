@@ -62,7 +62,8 @@ def get_task_info(request):
                 'produktinggi': json.loads(task.result.get('produktinggi')),
                 'produkrendah': json.loads(task.result.get('produkrendah')),
                 'lastmonth': json.loads(task.result.get('lastmonth')),
-                'last3month': json.loads(task.result.get('last3month'))
+                'last3month': json.loads(task.result.get('last3month')),
+                'yaxis': int(task.result.get('yaxis'))
             }
             return HttpResponse(json.dumps(data), content_type='application/json')
         else:

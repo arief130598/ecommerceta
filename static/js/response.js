@@ -10,6 +10,7 @@ var mavaluemonth = [];
 var mavalueyear = [];
 
 var listchart = [];
+var yaxis;
 
 function updateChart(tipe, iditem) {
 
@@ -115,6 +116,7 @@ function addmainchart(idx, idelement){
 
 var tanggalproduk = [];
 var valueproduk= [];
+var valueprodukma = [];
 
 function addlistchart(item, y){
     var ctx = document.getElementById(item);
@@ -128,6 +130,13 @@ function addlistchart(item, y){
           pointHoverBackgroundColor: '#fff',
           borderWidth: 2,
           data: valueproduk[y]
+        },
+        {
+          backgroundColor: hexToRgba(getStyle('--info'), 10),
+          borderColor: '#FF0000',
+          pointHoverBackgroundColor: '#fff',
+          borderWidth: 2,
+          data: valueprodukma[y]
         }]
       },
       options: {
@@ -141,14 +150,14 @@ function addlistchart(item, y){
               drawOnChartArea: false
             },
             ticks: {
-                display: false
+                display: true
             }
           }],
           yAxes: [{
             ticks: {
                 beginAtZero: true,
                 maxTicksLimit: 5,
-                max: 150
+                max: yaxis
             }
           }]
         },
@@ -333,6 +342,8 @@ $(function get_task() {
                     homepage(data.response);
                 }
 
+                yaxis = data.yaxis;
+
                 var total = 0;
 
                 var produk = [];
@@ -341,14 +352,20 @@ $(function get_task() {
                 $.each(data.produk, function (i, item) {
                     var tempvalue = [];
                     var temptanggal = [];
+                    var tempvaluema = [];
 
                     $.each(item.DataTanggal, function (j, order) {
                         temptanggal.push(order.tanggal);
                         tempvalue.push(order.value);
                     });
 
+                    $.each(item.DataTanggalMA, function (j, order) {
+                        tempvaluema.push(order.value);
+                    });
+
                     tanggalproduk.push(temptanggal);
                     valueproduk.push(tempvalue);
+                    valueprodukma.push(tempvaluema);
                     produk.push(item.Produk);
                     jumlah.push(item.Jumlah);
                 });
