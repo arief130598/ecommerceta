@@ -25,7 +25,7 @@ SECRET_KEY = 'q-lt76)c8icxatt$z#y_3=zhhj2jmk=8n!48l$kx6s-oxq+l+('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'https://ecommerceanalysis.azurewebsites.net/']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ecommerceanalysis.azurewebsites.net']
 
 
 # Application definition
