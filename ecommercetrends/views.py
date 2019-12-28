@@ -103,7 +103,6 @@ def search(request):
         else:
             print(box2)
 
-
     if idtask is not 0:
         return render(request, 'ecommercetrends/search.html', {'task_id': idtask})
     else:

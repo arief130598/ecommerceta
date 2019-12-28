@@ -13,105 +13,99 @@ var listchart = [];
 var yaxis;
 
 function updateChart(tipe, iditem) {
-
-    var tanggaldata = [];
-    var valuedata = [];
-    var mavaluedata = [];
+    chartdatatemp = [];
 
     if(tipe == 'tanggal'){
-        tanggaldata = tanggal[iditem];
-        valuedata = valuetanggal[iditem];
-        mavaluedata = mavaluetanggal[iditem];
+        for(var j=0; j<tanggal[iditem].length; j++){
+            chartdatatemp.push({
+               label: tanggal[iditem][j],
+               value: valuetanggal[iditem][j],
+               valuema: mavaluetanggal[iditem][j]
+            });
+        }
     }else if(tipe == 'bulan'){
-        tanggaldata = month[iditem];
-        valuedata = valuemonth[iditem];
-        mavaluedata = mavaluemonth[iditem];
+        for(var i=0; i<month[iditem].length; i++){
+            chartdatatemp.push({
+               label: month[iditem][i],
+               value: valuemonth[iditem][i],
+               valuema: mavaluemonth[iditem][i]
+            });
+        }
     }else{
-        tanggaldata = year[iditem];
-        valuedata = valueyear[iditem];
-        mavaluedata = mavalueyear[iditem];
+        for(var k=0; k<year[iditem].length; k++){
+            chartdatatemp.push({
+               label: year[iditem][k].toString(),
+               value: valueyear[iditem][k],
+               valuema: mavalueyear[iditem][k]
+            });
+        }
+        console.log(chartdatatemp);
     }
 
-    listchart[iditem].data.datasets[0].data = valuedata;
-    listchart[iditem].data.datasets[1].data = mavaluedata;
-    listchart[iditem].data.labels = tanggaldata;
-    listchart[iditem].update();
+    listchart[iditem].data = chartdatatemp;
+    listchart[iditem].invalidateData();
 }
 
 function addmainchart(idx, idelement){
 
-    var ctx = document.getElementById(idelement);
-    var idchart = new Chart($(ctx), {
-      type: 'line',
-      data: {
-        labels: month[idx],
-        datasets: [{
-          backgroundColor: hexToRgba(getStyle('--info'), 10),
-          borderColor: getStyle('--info'),
-          pointHoverBackgroundColor: '#fff',
-          borderWidth: 2,
-          data: valuemonth[idx]
-        }, {
-          backgroundColor: hexToRgba(getStyle('--info'), 10),
-          borderColor: '#FF0000',
-          pointHoverBackgroundColor: '#fff',
-          borderWidth: 2,
-          data: mavaluemonth[idx]
-        }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        legend: {
-          display: false
-        },
-        scales: {
-          xAxes: [{
-            gridLines: {
-              drawOnChartArea: false
-            }
-          }],
-          yAxes: [{
-            ticks: {
-              beginAtZero: true,
-              maxTicksLimit: 5,
-            }
-          }]
-        },
-        elements: {
-          point: {
-            radius: 0,
-            hitRadius: 10,
-            hoverRadius: 4,
-            hoverBorderWidth: 3
-          }
-        },
-        plugins: {
-            zoom: {
-                // Container for pan options
-                pan: {
-                    // Boolean to enable panning
-                    enabled: true,
+    var chart = am4core.create(idelement, am4charts.XYChart);
 
-                    // Panning directions. Remove the appropriate direction to disable
-                    // Eg. 'y' would only allow panning in the y direction
-                    mode: 'xy'
-                },
+    chartdatatemp = [];
+    for(var i=0; i<month[idx].length; i++){
+        chartdatatemp.push({
+           label: month[idx][i].toString(),
+           value: valuemonth[idx][i],
+           valuema: mavaluemonth[idx][i]
+        });
+    }
 
-                // Container for zoom options
-                zoom: {
-                    // Boolean to enable zooming
-                    enabled: true,
+    chart.data = chartdatatemp;
 
-                    // Zooming directions. Remove the appropriate direction to disable
-                    // Eg. 'y' would only allow zooming in the y direction
-                    mode: 'xy',
-                }
-            }
-        }
-      }
-    });
+    // Create axes
+    var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    dateAxis.renderer.minGridDistance = 50;
+    dateAxis.renderer.grid.template.disabled = true;
 
-    listchart.push(idchart);
+    var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+    // Create series
+    var series = chart.series.push(new am4charts.LineSeries());
+    series.dataFields.valueY = "value";
+    series.dataFields.dateX = "label";
+    series.stroke = am4core.color("#0000ff");
+    series.strokeWidth = 2;
+    series.minBulletDistance = 10;
+    series.tooltipText = "{valueY}";
+    series.tooltip.pointerOrientation = "vertical";
+    series.tooltip.background.cornerRadius = 20;
+    series.tooltip.background.fillOpacity = 0.5;
+    series.tooltip.label.padding(12,12,12,12);
+    series.tensionX = 0.77;
+
+    // Create series
+    var series2 = chart.series.push(new am4charts.LineSeries());
+    series2.dataFields.valueY = "valuema";
+    series2.dataFields.dateX = "label";
+    series2.stroke = am4core.color("#ff0000");
+    series2.strokeWidth = 2;
+    series2.minBulletDistance = 10;
+    series2.tooltipText = "{valueY}";
+    series2.tooltip.pointerOrientation = "vertical";
+    series2.tooltip.background.cornerRadius = 20;
+    series2.tooltip.background.fillOpacity = 0.5;
+    series2.tooltip.label.padding(12,12,12,12);
+    series2.tensionX = 0.77;
+
+    // Add scrollbar
+    chart.scrollbarX = new am4charts.XYChartScrollbar();
+    chart.scrollbarX.series.push(series);
+
+    // Add cursor
+    chart.cursor = new am4charts.XYCursor();
+    chart.cursor.xAxis = dateAxis;
+    chart.cursor.snapToSeries = series;
+
+    listchart.push(chart);
 }
 
 var tanggalproduk = [];
@@ -119,81 +113,63 @@ var valueproduk= [];
 var valueprodukma = [];
 
 function addlistchart(item, y){
-    var ctx = document.getElementById(item);
-    new Chart($(ctx), {
-      type: 'line',
-      data: {
-        labels: tanggalproduk[y],
-        datasets: [{
-          backgroundColor: hexToRgba(getStyle('--info'), 10),
-          borderColor: getStyle('--info'),
-          pointHoverBackgroundColor: '#fff',
-          borderWidth: 2,
-          data: valueproduk[y]
-        },
-        {
-          backgroundColor: hexToRgba(getStyle('--info'), 10),
-          borderColor: '#FF0000',
-          pointHoverBackgroundColor: '#fff',
-          borderWidth: 2,
-          data: valueprodukma[y]
-        }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        legend: {
-          display: false
-        },
-        scales: {
-          xAxes: [{
-            gridLines: {
-              drawOnChartArea: false
-            },
-            ticks: {
-                display: true
-            }
-          }],
-          yAxes: [{
-            ticks: {
-                beginAtZero: true,
-                maxTicksLimit: 5,
-                max: yaxis
-            }
-          }]
-        },
-        elements: {
-          point: {
-            radius: 0,
-            hitRadius: 10,
-            hoverRadius: 4,
-            hoverBorderWidth: 3
-          }
-        },
-        plugins: {
-            zoom: {
-                // Container for pan options
-                pan: {
-                    // Boolean to enable panning
-                    enabled: true,
 
-                    // Panning directions. Remove the appropriate direction to disable
-                    // Eg. 'y' would only allow panning in the y direction
-                    mode: 'xy'
-                },
+    var chart = am4core.create(item, am4charts.XYChart);
 
-                // Container for zoom options
-                zoom: {
-                    // Boolean to enable zooming
-                    enabled: true,
+    chartdatatemp = [];
+    for(var i=0; i<tanggalproduk[y].length; i++){
+        chartdatatemp.push({
+           label: tanggalproduk[y][i],
+           value: valueproduk[y][i],
+           valuema: valueprodukma[y][i]
+        });
+    }
 
-                    // Zooming directions. Remove the appropriate direction to disable
-                    // Eg. 'y' would only allow zooming in the y direction
-                    mode: 'xy',
-                }
-            }
-        }
-      }
-    });
+    chart.data = chartdatatemp;
+
+    // Create axes
+    var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    dateAxis.renderer.minGridDistance = 50;
+    dateAxis.renderer.grid.template.disabled = true;
+
+    var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+    // Create series
+    var series = chart.series.push(new am4charts.LineSeries());
+    series.dataFields.valueY = "value";
+    series.dataFields.dateX = "label";
+    series.stroke = am4core.color("#0000ff");
+    series.strokeWidth = 2;
+    series.minBulletDistance = 10;
+    series.tooltipText = "{valueY}";
+    series.tooltip.pointerOrientation = "vertical";
+    series.tooltip.background.cornerRadius = 20;
+    series.tooltip.background.fillOpacity = 0.5;
+    series.tooltip.label.padding(12,12,12,12);
+    series.tensionX = 0.77;
+
+    // Create series
+    var series2 = chart.series.push(new am4charts.LineSeries());
+    series2.dataFields.valueY = "valuema";
+    series2.dataFields.dateX = "label";
+    series2.stroke = am4core.color("#ff0000");
+    series2.strokeWidth = 2;
+    series2.minBulletDistance = 10;
+    series2.tooltipText = "{valueY}";
+    series2.tooltip.pointerOrientation = "vertical";
+    series2.tooltip.background.cornerRadius = 20;
+    series2.tooltip.background.fillOpacity = 0.5;
+    series2.tooltip.label.padding(12,12,12,12);
+    series2.tensionX = 0.77;
+
+    // Add scrollbar
+    chart.scrollbarX = new am4charts.XYChartScrollbar();
+    chart.scrollbarX.series.push(series);
+
+    // Add cursor
+    chart.cursor = new am4charts.XYCursor();
+    chart.cursor.xAxis = dateAxis;
+    chart.cursor.snapToSeries = series;
 }
 
 var iproduk = 0;
@@ -297,9 +273,7 @@ $(function get_task() {
                                 '</div>' +
                                 '<!-- /.row-->' +
                                 '<!--Line Chart-->' +
-                                '<div class="chart-wrapper" style="height:300px;margin-top:40px;" id="containerchart">' +
-                                    '<canvas class="chart" id="'+ data.judul +'"></canvas>' +
-                                '</div>' +
+                                '<div style="height:400px; width:100%;" id="' + data.judul + '"></div>' +
                                 '<!--End of Line Chart-->' +
                               '</div>' +
                               '<div class="card-footer">' +
@@ -379,10 +353,7 @@ $(function get_task() {
                 for(var i=0; i<produk.length; i++){
                     var percent = jumlah[i] / total * 100;
 
-                    var canvastemplate = "" +
-                        '<div class="chart-wrapper" style="height:130px;">' +
-                            '<canvas class="chart" id="'+ produk[i] +'"></canvas>' +
-                        '</div>';
+                    var canvastemplate = '<div style="height:250px; width:100%; margin-top: -5px;" id="' + produk[i] + '"></div>';
                     var listvaluetemplate = "" +
                         '<div class="progress-group" style="margin-top: 2%;">' +
                           '<div class="progress-group-header align-items-end">' +

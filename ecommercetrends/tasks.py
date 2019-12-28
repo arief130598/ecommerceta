@@ -19,8 +19,8 @@ from celery import shared_task, current_task
 '''from celery import current_app
 
 current_app.conf.CELERY_ALWAYS_EAGER = True
-current_app.conf.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True'''
-
+current_app.conf.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+'''
 from ecommercetrends import models
 
 
@@ -41,6 +41,53 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
         tempday = day
         day = day.rename(index=str, columns={"Assignment": "jumlah"})
         day['tanggal'] = pd.to_datetime(day['tanggal'])
+
+        movingaveragedataday = []
+        for k, l in enumerate(day['value']):
+            if k >= 6:
+                tempaverage = (day['value'][k] + day['value'][k - 6] + day['value'][k - 5] + day['value'][k - 4] +
+                               day['value'][k - 3] + day['value'][k - 2] + day['value'][k - 1]) / 7
+                movingaveragedataday.append(tempaverage)
+            else:
+                movingaveragedataday.append(0)
+
+        '''panjanghari = movingaveragedataday.__len__()-1
+
+        trenharinaik = []
+        trenhariturun = []
+        for iterhari in range(7, 0, -1):
+            if movingaveragedataday[panjanghari-iterhari] < day['value'][panjanghari-iterhari]:
+                trenharinaik.append(day['tanggal'][panjanghari-iterhari])
+            else:
+                trenhariturun.append(day['tanggal'][panjanghari-iterhari])
+
+        trennaik = []
+        trenstart = trenharinaik[0]
+        for k,l in enumerate(trenharinaik):
+            if k != 1:
+                substract = trenharinaik[k] - trenharinaik[k-1]
+                if substract.days != 30:
+                    if trenstart != trenharinaik[k]:
+                        trennaik.append(trenstart.strftime('%d %b, %Y') + " - " + trenharinaik[k].strftime('%d %b, %Y'))
+                    else:
+                        trennaik.append(trenstart.strftime('%d %b, %Y'))
+                    trenstart = trenharinaik[k]
+
+        trenturun = []
+        trenstart = trenhariturun[0]
+        for k, l in enumerate(trenhariturun):
+            if k != 1:
+                substract = trenhariturun[k] - trenhariturun[k - 1]
+                if substract.days != 30:
+                    if trenstart != trenhariturun[k]:
+                        trenturun.append(trenstart.strftime('%d %b, %Y') + " - " + trenhariturun[k].strftime('%d %b, %Y'))
+                    else:
+                        trenturun.append(trenstart.strftime('%d %b, %Y'))
+                    trenstart = trenhariturun[k]'''
+
+        maday = pd.DataFrame(movingaveragedataday, columns=['value'])
+        maday = maday.to_json(orient='records')
+
         day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
 
         tinggihari = day.loc[day['value'].idxmax()]
@@ -57,26 +104,12 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
         }
         rendahhari = json.dumps(rendahhari)
 
-        movingaveragedataday = []
-        for k, l in enumerate(day['value']):
-            if k >= 6:
-                tempaverage = (day['value'][k] + day['value'][k - 6] + day['value'][k - 5] + day['value'][k - 4] +
-                               day['value'][k - 3] + day['value'][k - 2] + day['value'][k - 1]) / 7
-                movingaveragedataday.append(tempaverage)
-            else:
-                movingaveragedataday.append(0)
-
-        maday = pd.DataFrame(movingaveragedataday, columns=['value'])
-        maday = maday.to_json(orient='records')
-
         day = day.to_json(orient='records')
 
         month = tempday.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
         month['tanggal'] = month.index
         month = month.reset_index(drop=True)
         month = month.rename(index=str, columns={"Assignment": "jumlah"})
-        month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
-        month = month.reset_index(drop=True)
 
         movingaveragedatamonth = []
         for k, l in enumerate(month['value']):
@@ -85,6 +118,21 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
                 movingaveragedatamonth.append(tempaverage)
             else:
                 movingaveragedatamonth.append(0)
+
+        '''trennaikbulan = []
+        trenturunbulan = []
+        trenbulannaiktgl = []
+        trenbulanturuntgl = []
+        for iterbulan, itemmabulan in enumerate(movingaveragedatamonth):
+            if itemmabulan < month['value'][iterbulan]:
+                trennaikbulan.append("Tren Naik")
+                trenbulannaiktgl.append(month['tanggal'][iterbulan])
+            else:
+                trenturunbulan.append("Tren Turun")
+                trenbulanturuntgl.append(month['tanggal'][iterbulan])'''
+
+        month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
+        month = month.reset_index(drop=True)
 
         mamonth = pd.DataFrame(movingaveragedatamonth, columns=['value'])
         mamonth = mamonth.to_json(orient='records')
@@ -117,6 +165,18 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
                 movingaveragedatayear.append(tempaverage)
             else:
                 movingaveragedatayear.append(0)
+
+        '''trentahunnaik = []
+        trentahunturun = []
+        trentahunnaiktgl = []
+        trentahunturuntgl = []
+        for itertahun, itemmatahun in enumerate(movingaveragedatayear):
+            if itemmatahun < year['value'][itertahun]:
+                trentahunnaik.append("Tren Naik")
+                trentahunnaiktgl.append(year['tanggal'][itertahun])
+            else:
+                trentahunturun.append("Tren Turun")
+                trentahunturuntgl.append(year['tanggal'][itertahun])'''
 
         mayear = pd.DataFrame(movingaveragedatayear, columns=['value'])
         mayear = mayear.to_json(orient='records')
@@ -416,6 +476,7 @@ def totalulasan(katmodel, katmodel2, datestart, dateend):
             last3monthtinggi = produktinggi(last3monthtemp)
 
             yaxis = datatask.get('yaxis')
+            yaxis = yaxis.astype(str)
 
             finaldata = {
                 'produk': produkfixdata.to_json(orient='records'),
