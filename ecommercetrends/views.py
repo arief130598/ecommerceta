@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
-from ecommercetrends.tasks import totalulasan
+from ecommercetrends.tasks import totalulasan, tasksearch
 
 
 def home(request):
@@ -80,28 +80,14 @@ def search(request):
     idtask = 0
     katmodel2 = ''
 
+    ecommerce = request.POST.get('ecommerce')
     datestart = request.POST.get('datestart')
     dateend = request.POST.get('dateend')
-    box1 = request.POST.get('box1')
-    box2 = request.POST.get('box2')
-    box3 = request.POST.get('searchkeyword')
+    kategori = request.POST.get('kategoriutama')
+    keyword = request.POST.get('searchkeyword')
 
-    if box1 == "men":
-        if box2 == 'Clothing':
-            print(box2)
-        elif box2 == 'Shoes':
-            if box3 == '':
-                katmodel = 'Sepatu Pria'
-                task = totalulasan.delay(katmodel, katmodel2, datestart, dateend)
-                idtask = task.id
-            else:
-                box3 = box3.lower()
-                katmodel = 'Sepatu Pria'
-                katmodel2 = box3
-                task = totalulasan.delay(katmodel, katmodel2, datestart, dateend)
-                idtask = task.id
-        else:
-            print(box2)
+    task = tasksearch.delay(ecommerce, datestart, dateend, kategori, keyword)
+    idtask = task.id
 
     if idtask is not 0:
         return render(request, 'ecommercetrends/search.html', {'task_id': idtask})

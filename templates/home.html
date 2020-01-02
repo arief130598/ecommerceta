@@ -31,29 +31,29 @@
       </a>
       <form action="{% url 'search' %}" method="post">
           {% csrf_token %}
-          <ul class="navbar-nav" style="margin-right: 110px">
+          <ul class="navbar-nav mr-4">
+            <li class="nav-item px-1 col-auto">
+              <select class="form-control" name="ecommerce" id="ecommerce">
+                <option value='shopee'>Shopee</option>
+                <option value='bukalapak'>Bukalapak</option>
+              </select>
+            </li>
             <li class="nav-item px-1 col-2">
               <input type="text" placeholder="Date Start" name="datestart" class="form-control date-picker" id="date-picker" aria-label="datestart">
             </li>
             <li class="nav-item px-1 col-2">
               <input type="text" placeholder="Date End" name="dateend" class="form-control date-picker-2" id="date date-picker-2" aria-label="dateend">
             </li>
-            <li class="nav-item px-1 col-2">
-              <select class="form-control" name="box1" id="firstcategory" onchange="dynamicdropdown(this.options[this.selectedIndex].value);">
-                <option value="">Select Category</option>
-                <option onclick="newdropdown()" value='men'>Men's Fashion</option>
-                <option value='women'>Women's Fashion</option>
+            <li class="nav-item px-1 col-auto">
+              <select class="form-control" name="kategoriutama" id="kategoriutama">
+                <option value='sepatu pria'>Sepatu Pria</option>
+                <option value='laptop'>Laptop</option>
               </select>
             </li>
-            <li class="nav-item px-1 col-2">
-              <script type="text/javascript">
-                document.write('<select class="form-control" name="box2" id="secondcategory" onchange="javascript: dynamicdropdown1(this.options[this.selectedIndex].value);"><option value="">No Category</option></select>')
-              </script>
+            <li class="nav-item px-1 mr-n4 col-3">
+              <input type="text" class="form-control" name="searchkeyword" placeholder="Opsional, Keyword pisahkan dengan ' , '" aria-label="Keyword" aria-describedby="basic-addon2">
             </li>
-            <li class="nav-item px-1 mr-n4 col-4">
-              <input type="text" class="form-control" name="searchkeyword" placeholder="[Optional] Insert Keyword Separate By  ' , '" aria-label="Keyword" aria-describedby="basic-addon2">
-            </li>
-            <li class="nav-item px-1 mt-2">
+            <li class="nav-item px-1 mt-2 col-auto">
               <button type="submit" class="btn btn-primary ml-4 mb-2" onclick="newdropdown()">Search</button>
             </li>
           </ul>

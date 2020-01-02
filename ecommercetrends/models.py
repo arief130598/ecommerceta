@@ -2,58 +2,45 @@ from django.db import models
 
 
 # Create your models here.
-class AbstractUlasan(models.Model):
-    nama = models.TextField(null=True, blank=True)
-    jenis = models.CharField(max_length=255, null=True, blank=True)
-    rating = models.CharField(max_length=255, null=True, blank=True)
-    tanggal = models.DateField()
-    produk = models.CharField(max_length=255)
-    review = models.TextField(null=True, blank=True)
+class Toko(models.Model):
+    urltoko = models.CharField(max_length=1024, primary_key=True)
+    nama_toko = models.CharField(max_length=255)
+    alamat = models.CharField(max_length=255, null=True, blank=True)
+    ecommerce = models.CharField(max_length=255)
 
     def __str__(self):
-        return '{}'.format(self.nama + " - " + self.produk + " - " + self.tanggal.strftime('%B %d, %Y'))
+        return '{}'.format(self.nama_toko + " - " + self.ecommerce)
 
     class Meta:
-        abstract = True
+        verbose_name_plural = "Toko"
 
 
-class SepatuPria(AbstractUlasan):
-    pass
+class Produk(models.Model):
+    urlproduk = models.CharField(max_length=1024, primary_key=True)
+    toko = models.ForeignKey(Toko, on_delete=models.CASCADE)
+    nama_produk = models.CharField(max_length=255)
+    jumlah_terjual = models.IntegerField(default=0)
+    jumlah_ulasan = models.IntegerField(default=0)
+    kategori = models.CharField(max_length=255)
+
+    def __str__(self):
+        return '{}'.format(self.nama_produk + " - " + self.toko.nama_toko)
 
     class Meta:
-        verbose_name_plural = 'Sepatu Pria'
+        verbose_name_plural = "Produk"
 
 
-class SepatuWanita(AbstractUlasan):
-    pass
-
-    class Meta:
-        verbose_name_plural = 'Sepatu Wanita'
-
-
-class ShopeeSepatuPria(models.Model):
-    toko = models.CharField(max_length=255)
-    terjual = models.IntegerField(default=0)
-    jumlahulasan = models.IntegerField(default=0)
-    harga = models.IntegerField(default=0)
-    produk = models.CharField(max_length=255)
-    url = models.TextField()
-    asaltoko = models.CharField(max_length=255, null=True, blank=True)
-
-
-class ShopeeSepatuPriaUlasan(models.Model):
-    nama = models.TextField(null=True, blank=True)
+class Ulasan(models.Model):
+    produk = models.ForeignKey(Produk, on_delete=models.CASCADE)
+    nama_pengulas = models.CharField(max_length=255)
     variasi = models.CharField(max_length=255, null=True, blank=True)
     rating = models.IntegerField(default=1)
-    tanggal = models.DateField()
-    toko = models.CharField(max_length=255)
-    produk = models.CharField(max_length=255)
-    url = models.TextField()
-    review = models.TextField(null=True, blank=True)
+    tanggal = models.DateTimeField()
+    ulasan = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return '{}'.format(self.nama_pengulas + " - " + self.produk.nama_produk + " - " + self.produk.toko.nama_toko + " - " + self.tanggal.strftime('%B %d, %Y'))
 
-class ReviewName(models.Model):
-    produk = models.CharField(max_length=255)
+    class Meta:
+        verbose_name_plural = "Ulasan"
 
-class ReviewName2(models.Model):
-    produk = models.CharField(max_length=255)

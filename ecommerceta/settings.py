@@ -77,10 +77,10 @@ WSGI_APPLICATION = 'ecommerceta.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'sql_server.pyodbc',
-        'NAME': 'ecommerceta',
+        'NAME': 'ecommerceanalysis',
         'USER': 'knight',
         'PASSWORD': 'Arief-1305',
-        'HOST': 'ecommerceta.database.windows.net',
+        'HOST': 'ecommerceanalysis.database.windows.net',
         'PORT': '1433',
 
         'OPTIONS': {

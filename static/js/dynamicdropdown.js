@@ -7,9 +7,9 @@ function dynamicdropdown(listindex)
         if($('#clothingcategory').length != 0){
             document.getElementById('clothingcategory').remove()
         }
-        document.getElementById("secondcategory").options[0]=new Option("Select Men's Category","");
-        document.getElementById("secondcategory").options[1]=new Option("Clothing","Clothing");
-        document.getElementById("secondcategory").options[2]=new Option("Shoes","Shoes");
+        document.getElementById("secondcategory").options[0]=new Option("Pilih Kategori","");
+        document.getElementById("secondcategory").options[1]=new Option("Baju","Baju");
+        document.getElementById("secondcategory").options[2]=new Option("Sepatu","Sepatu");
         document.getElementById("secondcategory").options[3]=new Option("Watches","Watches");
         break;
 

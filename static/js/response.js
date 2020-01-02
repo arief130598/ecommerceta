@@ -393,7 +393,7 @@ $(function get_task() {
            if(data.state != 'SUCCESS') {
                setTimeout(function () {
                    get_task()
-               }, 2000);
+               }, 5000);
            }
        },
        error: function (data) {
