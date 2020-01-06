@@ -1,9 +1,9 @@
 # Create your tasks here
 from __future__ import absolute_import, unicode_literals
+from ecommercetrends.models import Ulasan, Produk, Toko
 
 import json
 import time
-
 import pandas as pd
 import nltk
 from django.db.models import Q
@@ -12,16 +12,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import silhouette_score
 from datetime import datetime
+from sklearn.feature_extraction.text import TfidfVectorizer
+import re
 
 from celery import shared_task, current_task
 
 # Library for debugging celery
-'''from celery import current_app
+from celery import current_app
 
 current_app.conf.CELERY_ALWAYS_EAGER = True
 current_app.conf.CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-'''
-from ecommercetrends.models import Ulasan, Produk, Toko
 
 
 def jumlahulasan(datajumlah):
@@ -138,7 +138,8 @@ def groupingyear(data):
     return year
 
 
-def feature_extraction(dataset):
+# Standar Bag of Word
+'''def feature_extraction(dataset):
     tf = []
     # 0 tokenize
     nama_token = [i.split() for i in dataset['nama']]
@@ -159,15 +160,48 @@ def feature_extraction(dataset):
         for word in nama_token[x]:
             word_token[x][word] += 1
 
-    # 4 tf function
-    '''def compute_tf(word_dict, l):
-        tf = {}
-        sum_nk = len(l)
-        for word, count in word_dict.items():
-            tf[word] = count / sum_nk
-        return tf'''
+    # 4 running tf from data before
+    for x in word_token:
+        # tf.append(compute_tf(word_token[x],nama_token[x]))
+        tf.append(x.values())
 
-    # 5 running tf from data before
+    return tf'''
+
+
+def feature_extraction(dataset):
+    tf = []
+    for x, y in enumerate(dataset['nama']):
+        dataset['nama'][x] = re.sub(r'\b\w{1,2}\b', '', dataset['nama'][x])
+        dataset['nama'][x] = re.sub(' +', ' ', dataset['nama'][x])
+
+    # 0 tokenize
+    nama_token = [i.split() for i in dataset['nama']]
+
+    # 1 bag of word
+    listword = []
+    for x in dataset['nama']:
+        tokens = nltk.word_tokenize(x)
+        listword += tokens
+
+    teks = [' '.join(listword)]
+    v = TfidfVectorizer()
+    x = v.fit_transform(teks)
+    df1 = pd.DataFrame(x.toarray(), columns=v.get_feature_names())
+    test = df1.melt(var_name="Produk")
+    test.set_index('Produk', inplace=True)
+
+    worddict = dict.fromkeys(listword, 0)
+
+    # 2 create data with 0 value same with sum of data
+    word_token = [dict.fromkeys(worddict, 0) for x in dataset['nama']]
+
+    # 3 add = 1 for word same in nama_token
+    for x, y in enumerate(nama_token):
+        for word in nama_token[x]:
+            print(word)
+            word_token[x][word] += test.loc[word.lower()].values[0]
+
+    # 4 Append to one data
     for x in word_token:
         # tf.append(compute_tf(word_token[x],nama_token[x]))
         tf.append(x.values())
@@ -175,7 +209,7 @@ def feature_extraction(dataset):
     return tf
 
 
-def silhoutte(data, kmax):
+def silhoutte(init, data, kmax):
     sil = []
 
     # dissimilarity would not be defined for a single cluster, thus, minimum number of clusters should be 2
@@ -187,95 +221,46 @@ def silhoutte(data, kmax):
     return sil
 
 
-def task(dataset, judul, jumproduk, indexmonth, index3month):
-    dataset = dataset.rename(index=str, columns={"produk__nama_produk": "nama", "tanggal": "tanggal"})
-
-    dataset['tanggal'] = pd.to_datetime(dataset['tanggal'])
-    dataset['value'] = 1
-
-    dataday = groupingday(dataset)
-    day = dataday.get('day')
-    maday = movingaverage(day, 7)
-    day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
-    tinggihari = tanggaltinggi(day)
-    rendahhari = tanggalrendah(day)
-    day = day.to_json(orient='records')
-
-    datamonth = dataday.get('tempday')
-    month = groupingmonth(datamonth)
-    mamonth = movingaverage(month, 3)
-    month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
-    month = month.reset_index(drop=True)
-    tinggibulan = tanggaltinggi(month)
-    rendahbulan = tanggalrendah(month)
-    month = month.to_json(orient='records')
-
-    datayear = dataday.get('tempday')
-    year = groupingyear(datayear)
-    mayear = movingaverage(year, 3)
-    tinggitahun = year.loc[year['value'].idxmax()]
-    tinggitahun = {
-        'value': int(tinggitahun['value']),
-        'tanggal': int(tinggitahun['tanggal'])
-    }
-    tinggitahun = json.dumps(tinggitahun)
-
-    rendahtahun = year.loc[year['value'].idxmin()]
-    rendahtahun = {
-        'value': int(rendahtahun['value']),
-        'tanggal': int(rendahtahun['tanggal'])
-    }
-    rendahtahun = json.dumps(rendahtahun)
-    year = year.to_json(orient='records')
-
-    current_task.update_state(state='PROGRESS',
-                              meta={'status': 'Bag of Word', 'day': day, 'month': month, 'year': year,
-                                    'tinggihari': tinggihari, 'tinggibulan': tinggibulan,
-                                    'tinggitahun': tinggitahun,
-                                    'rendahhari': rendahhari, 'rendahbulan': rendahbulan,
-                                    'rendahtahun': rendahtahun,
-                                    'judul': judul,
-                                    'maday': maday,
-                                    'mamonth': mamonth,
-                                    'mayear': mayear})
-
-    time.sleep(15)
-
-    if jumproduk is not 1:
-        dataset['nama'] = dataset['nama'].str.replace(judul, '')
+def clusteringdata(dataset, datafull, keyword, indexmonth, index3month, dataday):
+    # If search is category not specific product
+    if keyword is not None:
+        dataset['nama'] = dataset['nama'].str.replace(keyword, '')
         dataset['nama'] = dataset['nama'].str.strip()
         dataset.replace('', np.nan, inplace=True)
         dataset = dataset.dropna()
+        dataset.reset_index(drop=True)
 
-    datasetk = dataset
-    datasetk = datasetk.drop_duplicates(subset='nama', keep='first')
-    datasetk = datasetk.reset_index(drop=True)
-    datasetk['nama'] = datasetk['nama'].str.replace('[^\w\s]', ' ')
-
+    ''' # set kmax for finding k, maximum is 100 cluster
     kmax = datasetk.__len__()
     if kmax > 100:
         kmax = 100
+        init = 30
+    else:
+        init = 2
 
-    if jumproduk is not 1:
+    # if not category and specific product, duplicate them to 5 so the data will make their own cluster
+    if keyword is not None:
         datasetk = pd.DataFrame(np.repeat(datasetk.values, 5, axis=0))
         datasetk = datasetk.rename(columns={0: 'nama', 1: 'tanggal'})
 
+    # Feature Extraction for finding K
     readyclustering = pd.DataFrame(feature_extraction(datasetk))
 
     current_task.update_state(state='PROGRESS', meta={'status': 'Mencari Nilai K'})
 
     # Finding Best K with silhouette
-    sil = silhoutte(readyclustering, kmax)
-    k = sil.index(max(sil)) + 2
+    sil = silhoutte(init, readyclustering, kmax)
+    k = sil.index(max(sil)) + init'''
 
     current_task.update_state(state='PROGRESS', meta={'status': 'Clustering'})
 
+    # Perform k-Means clustering with k from Silhouette Method
     readyclustering = pd.DataFrame(feature_extraction(dataset))
-    kmeans = KMeans(n_clusters=k, max_iter=200).fit(readyclustering)
+    kmeans = KMeans(n_clusters=30).fit(readyclustering)
     clusters = kmeans.labels_
 
+    # Create new column dataframe to labeling for every product
     hasilcluster = [i for i in clusters]
-
     data = dataset
     data['Assignment'] = hasilcluster
 
@@ -286,7 +271,7 @@ def task(dataset, judul, jumproduk, indexmonth, index3month):
 
     current_task.update_state(state='PROGRESS', meta={'status': 'Finding Total Produk'})
 
-    # Mencari nama produk
+    # Mencari nama produk dengan mengetahui kata apa yang sering muncul di setiap produk
     nama_token = []
     listword = []
     produk = []
@@ -322,69 +307,124 @@ def task(dataset, judul, jumproduk, indexmonth, index3month):
             produk[i] = ' '.join(produk[i])
     # convert to dataframe and sort
 
-    for i, j in enumerate(produk):
-        data.loc[data['Assignment'] == i, 'nama'] = j
-
-    produkfix = jumlahulasan(data)
-
-    lastmonth = data.sort_values(by="tanggal", ascending=True).set_index("tanggal").last("1M")
-    lastmonth = lastmonth.sort_values(by=['Assignment'])
-    lastmonth = lastmonth.reset_index(drop=True)
-    lastmonth.index += indexmonth
-
-    last3month = data.sort_values(by="tanggal", ascending=True).set_index("tanggal").last("3M")
-    last3month = last3month.sort_values(by=['Assignment'])
-    last3month = last3month.reset_index(drop=True)
-    last3month.index += index3month
-
-    maxyaxis = 0
-    # Mencari data tanggal untuk setiap jenis produk
-    listprodukdata = []
-    listprodukdatama = []
     tempdaymin = dataday.get('tempdaymin')
     tempdaymax = dataday.get('tempdaymax')
 
-    for i in produkfix.index:
-        datatanggal = pd.DataFrame(data['tanggal'].loc[data['Assignment'] == i])
-        datatanggal['value'] = 1
-
-        day = datatanggal.groupby(datatanggal['tanggal'].dt.date).sum()
-        day = day.reindex(pd.date_range(tempdaymin, tempdaymax), fill_value=0)
+    trendataproduk = []
+    trenmaproduk = []
+    jumlahterjualproduk = []
+    jumlahulasanproduk = []
+    jumlahulasanproduk1bulan = []
+    jumlahulasanproduk3bulan = []
+    ymaxdata = []
+    for i, j in enumerate(produk):
+        temptanggalutama = []
+        tempdata = data.loc[data['Assignment'] == i]
+        tempjumlahterjual = tempdata['produk__jumlah_terjual'].sum()
+        tempjumlahulasan = tempdata['produk__jumlah_ulasan'].sum()
+        for k, l in enumerate(tempdata['produk__urlproduk']):
+            temptanggal = datafull.loc[datafull['produk__urlproduk'] == l]
+            temptanggalutama += temptanggal['tanggal'].to_list()
+        temptanggalutama = pd.DataFrame({'tanggal': temptanggalutama})
+        temptanggalutama = temptanggalutama.reset_index(drop=True)
+        temptanggalutama['value'] = 1
+        temptanggalutama = groupingday(temptanggalutama)
+        temptanggalutama = temptanggalutama.get('day')
+        temptanggalutama.index = temptanggalutama['tanggal']
+        day = temptanggalutama.reindex(pd.bdate_range(tempdaymin, tempdaymax), fill_value=0)
         day['tanggal'] = day.index
+        day = day.reset_index(drop=True)
+        for o, p in enumerate(temptanggalutama['tanggal']):
+            temptanggalutama['tanggal'][o] = temptanggalutama['tanggal'][o].tz_localize(None)
+        day = pd.concat([temptanggalutama, day], axis=0)
+        day = day.reset_index(drop=True)
+        month = groupingmonth(day)
+        bulan3 = month['value'][month.__len__() - 1] + month['value'][month.__len__() - 2] + month['value'][
+            month.__len__() - 3]
+        bulan1 = month['value'][month.__len__() - 1]
+        ma = movingaverage(month, 3)
+        jumlahulasanproduk1bulan.append(bulan1)
+        jumlahulasanproduk3bulan.append(bulan3)
+        ymaxdata.append(month)
+        trendataproduk.append(month.to_json(orient='records'))
+        trenmaproduk.append(ma)
+        jumlahterjualproduk.append(tempjumlahterjual)
+        jumlahulasanproduk.append(tempjumlahulasan)
 
-        month = day.groupby(pd.Grouper(key='tanggal', freq='M')).sum()
-        month['tanggal'] = month.index
-        month = month.reset_index(drop=True)
-        month = month.rename(index=str, columns={"Assignment": "jumlah"})
-        month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
-        month = month.reset_index(drop=True)
-        if month['value'].max() > maxyaxis:
-            maxyaxis = month['value'].max()
+    clusterfinish = pd.DataFrame({'trendataproduk': trendataproduk,
+                                  'trenmaproduk': trenmaproduk,
+                                  'jumlahterjualproduk': jumlahterjualproduk,
+                                  'jumlahulasanproduk': jumlahulasanproduk,
+                                  'jumlahulasan3bulan:': jumlahulasanproduk3bulan,
+                                  'jumlahulasan1bulan': jumlahulasanproduk1bulan,
+                                  'nama': produk})
 
-        movingaveragedatamonth = []
-        for k, l in enumerate(month['value']):
-            if k >= 5:
-                tempaverage = (month['value'][k] + month['value'][k - 5] + month['value'][k - 4] + month['value'][
-                    k - 3] + month['value'][k - 2] + month['value'][k - 1]) / 5
-                movingaveragedatamonth.append(tempaverage)
-            else:
-                movingaveragedatamonth.append(0)
+    clusterfinish = clusterfinish.sort_values(by='jumlahterjualproduk')
+    yaxis = 0
+    for i in ymaxdata:
+        if yaxis < max(i['value']):
+            yaxis = max(i['value'])
 
-        mamonth = pd.DataFrame(movingaveragedatamonth, columns=['value'])
-        listprodukdatama.append(mamonth.to_dict(orient='records'))
-        listprodukdata.append(month.to_dict(orient='records'))
+    return {'clusterfinish': clusterfinish, 'yaxis': yaxis}
 
-    produkfix['DataTanggal'] = listprodukdata
-    produkfix['DataTanggalMA'] = listprodukdatama
 
-    finaldatatask = {
-        'produkfix': produkfix,
-        'lastmonth': lastmonth,
-        'last3month': last3month,
-        'yaxis': maxyaxis
+def trenulasan(dataset, judul):
+    jumlahterjual = int(dataset['produk__jumlah_terjual'].sum())
+    jumlahulasan = int(dataset['produk__jumlah_ulasan'].sum())
+    dataset['tanggal'] = pd.to_datetime(dataset['tanggal'])
+    dataset['value'] = 1
+
+    # Grouping data by day and finding the highest review and lowest review and calculate Moving Average
+    dataday = groupingday(dataset)
+    day = dataday.get('day')
+    maday = movingaverage(day, 7)
+    day['tanggal'] = day['tanggal'].dt.strftime('%d %b, %Y')
+    tinggihari = tanggaltinggi(day)
+    rendahhari = tanggalrendah(day)
+    day = day.to_json(orient='records')
+
+    # Grouping data by month and finding the highest review and lowest review and calculate Moving Average
+    datamonth = dataday.get('tempday')
+    month = groupingmonth(datamonth)
+    mamonth = movingaverage(month, 3)
+    month['tanggal'] = month['tanggal'].dt.strftime('%b, %Y')
+    month = month.reset_index(drop=True)
+    tinggibulan = tanggaltinggi(month)
+    rendahbulan = tanggalrendah(month)
+    month = month.to_json(orient='records')
+
+    # Grouping data by year and finding the highest review and lowest review and calculate Moving Average
+    datayear = dataday.get('tempday')
+    year = groupingyear(datayear)
+    mayear = movingaverage(year, 3)
+    tinggitahun = year.loc[year['value'].idxmax()]
+    tinggitahun = {
+        'value': int(tinggitahun['value']),
+        'tanggal': int(tinggitahun['tanggal'])
     }
+    tinggitahun = json.dumps(tinggitahun)
 
-    return finaldatatask
+    rendahtahun = year.loc[year['value'].idxmin()]
+    rendahtahun = {
+        'value': int(rendahtahun['value']),
+        'tanggal': int(rendahtahun['tanggal'])
+    }
+    rendahtahun = json.dumps(rendahtahun)
+    year = year.to_json(orient='records')
+
+    # Update status
+    current_task.update_state(state='PROGRESS',
+                              meta={'status': 'Bag of Word', 'day': day, 'month': month, 'year': year,
+                                    'tinggihari': tinggihari, 'tinggibulan': tinggibulan,
+                                    'tinggitahun': tinggitahun,
+                                    'rendahhari': rendahhari, 'rendahbulan': rendahbulan,
+                                    'rendahtahun': rendahtahun,
+                                    'judul': judul,
+                                    'maday': maday,
+                                    'mamonth': mamonth,
+                                    'mayear': mayear})
+
+    return dataday
 
 
 @shared_task
@@ -407,281 +447,32 @@ def tasksearch(ecommerce, datestart, dateend, kategori, keyword):
     statusdata = 0
 
     if keyword.__len__() == 0:
-        dataset = pd.DataFrame(list(Ulasan.objects.select_related('produk').filter(
+        dataset = pd.DataFrame(list(Ulasan.objects.filter(
+            tanggal__range=[datestart, dateend]
+        ).select_related('produk').filter(
             produk__kategori__icontains=kategori
-        ).select_related('produk__toko').filter(produk__toko__ecommerce=ecommerce).values(
-            'produk__nama_produk', 'tanggal')))
+        ).select_related('produk__toko').filter(
+            produk__toko__ecommerce=ecommerce
+        ).values(
+            'produk__urlproduk', 'produk__nama_produk', 'produk__jumlah_terjual', 'produk__jumlah_ulasan', 'tanggal'
+        )))
 
-        jumlahterjual = pd.DataFrame(list(Produk.objects.filter(
-            kategori__icontains='Sepatu Pria'
-        ).select_related('toko').filter(toko__ecommerce='Shopee').values(
-            'jumlah_terjual')))
-        jumlahterjual = jumlahterjual.sum()
-        jumlahterjual = int(jumlahterjual.values)
+        datacluster = dataset
+        dataday = trenulasan(dataset, kategori)
+        time.sleep(10)
 
-        jumlahulasantotal = pd.DataFrame(list(Produk.objects.filter(
-            kategori__icontains='Sepatu Pria'
-        ).select_related('toko').filter(toko__ecommerce='Shopee').values(
-            'jumlah_ulasan')))
-        jumlahulasantotal = jumlahulasantotal.sum()
-        jumlahulasantotal = int(jumlahulasantotal.values)
-
-        dataset = dataset.rename(index=str, columns={"produk__nama_produk": "nama", "tanggal": "tanggal"})
-        jumproduk = 1
-
-        datatask = task(dataset, kategori, jumproduk, indexmonth, index3month)
-
-        produkfixdata = datatask.get('produkfix')
-        produkfixdata = sortdata(produkfixdata)
-        produkfixtinggi = produktinggi(produkfixdata)
-        produkfixrendah = produkrendah(produkfixdata)
-
-        lastmonthtemp = datatask.get('lastmonth')
-        lastmonthtemp = jumlahulasan(lastmonthtemp)
-        lastmonthtinggi = produktinggi(lastmonthtemp)
-
-        last3monthtemp = datatask.get('last3month')
-        last3monthtemp = jumlahulasan(last3monthtemp)
-        last3monthtinggi = produktinggi(last3monthtemp)
-
-        yaxis = datatask.get('yaxis')
-        yaxis = yaxis.astype(str)
+        datacluster.drop_duplicates(subset='produk__urlproduk', inplace=True)
+        datacluster = datacluster.reset_index(drop=True)
+        datacluster = datacluster.rename(index=str, columns={"produk__nama_produk": "nama"})
+        keyword = None
+        datatask = clusteringdata(datacluster, dataset, keyword, indexmonth, index3month, dataday)
+        produkfinal = datatask.get('clusterfinish')
+        last3month = produkfinal['jumlahulasan3bulan'].idxmax(axis=1)
+        last1month = produkfinal['jumlahulasan1bulan'].idxmax(axis=1)
 
         finaldata = {
-            'produk': produkfixdata.to_json(orient='records'),
-            'produktinggi': produkfixtinggi,
-            'produkrendah': produkfixrendah,
-            'lastmonth': lastmonthtinggi,
-            'last3month': last3monthtinggi,
-            'yaxis': yaxis,
+            'produk': produkfinal.to_json(orient='records'),
+            'yaxis': datatask.get('yaxis'),
         }
 
         return finaldata
-
-    else:
-        loop = katmodel2.split(sep=',')
-        jumproduk = -1
-        yaxistemp = []
-
-        for m, n in enumerate(loop):
-            loop[m] = n.strip()
-            if loop[m].__len__() is 0 or loop[m].isspace():
-                continue
-
-            data = pd.DataFrame(list(models.SepatuPria.objects.filter(
-                Q(produk__icontains=loop[m] + ' ') | Q(produk__icontains=' ' + loop[m] + ' ') | Q(
-                    produk__icontains=' ' + loop[m])).filter(tanggal__range=[datestart, dateend]).values('produk',
-                                                                                                         'tanggal')))
-
-            if data.__len__() is 0:
-                continue
-            else:
-                statusdata = 1
-
-            datatask = task(data, loop[m], jumproduk, indexmonth, index3month)
-
-            yaxistemp.append(datatask.get('yaxis'))
-
-            datatemp = datatask.get('produkfix')
-            datatemp['Produk'] = loop[m] + ' ' + datatemp['Produk']
-            produkfixdata = produkfixdata.append(datatemp, sort=False)
-
-            monthtemp = datatask.get('lastmonth')
-            monthtemp['nama'] = loop[m] + ' ' + monthtemp['nama']
-            lastmonthtemp = lastmonthtemp.append(monthtemp, sort=False)
-
-            month3temp = datatask.get('last3month')
-            month3temp['nama'] = loop[m] + ' ' + month3temp['nama']
-            last3monthtemp = last3monthtemp.append(month3temp, sort=False)
-
-            indexmonth = indexmonth + lastmonthtemp.__len__()
-            index3month = index3month + last3monthtemp.__len__()
-
-        if statusdata is 0:
-            return 'FAIL'
-
-        yaxis = max(yaxistemp).astype(str)
-
-        produkfixdata = sortdata(produkfixdata)
-        produkfixtinggi = produktinggi(produkfixdata)
-        produkfixrendah = produkrendah(produkfixdata)
-
-        lastmonthtinggi = jumlahulasan(lastmonthtemp)
-        lastmonthtinggi = produktinggi(lastmonthtinggi)
-
-        last3monthtinggi = jumlahulasan(last3monthtemp)
-        last3monthtinggi = produktinggi(last3monthtinggi)
-
-        finaldata = {
-            'produk': produkfixdata.to_json(orient='records'),
-            'produktinggi': produkfixtinggi,
-            'produkrendah': produkfixrendah,
-            'lastmonth': lastmonthtinggi,
-            'last3month': last3monthtinggi,
-            'yaxis': yaxis,
-        }
-
-        return finaldata
-
-
-@shared_task
-def totalulasan(katmodel, katmodel2, datestart, dateend):
-    def jumlahulasan(datajumlah):
-        tempnama = datajumlah['nama'][0]
-        tempjumlah = 0
-        jumlah = []
-        nama = []
-        for j, i in enumerate(datajumlah['nama']):
-            if i == tempnama:
-                tempjumlah = tempjumlah + 1
-            else:
-                jumlah.append(tempjumlah)
-                nama.append(tempnama)
-                tempjumlah = 1
-                tempnama = i
-
-            if (datajumlah.__len__() - 1) == j:
-                jumlah.append(tempjumlah)
-                nama.append(tempnama)
-
-        produk = pd.DataFrame({'Produk': nama, 'Jumlah': jumlah})
-        return produk
-
-    def sortdata(data):
-        data = data.sort_values(by=['Jumlah'], ascending=False)
-        data = data.reset_index(drop=True)
-        return data
-
-    def produktinggi(data):
-        produktinggidata = data.loc[data['Jumlah'].astype('float64').idxmax()]
-        produktinggidata = {
-            'jumlah': int(produktinggidata['Jumlah']),
-            'nama': produktinggidata['Produk']
-        }
-        produktinggidata = json.dumps(produktinggidata)
-        return produktinggidata
-
-    def produkrendah(data):
-        produkrendahdata = data.loc[data['Jumlah'].astype('float64').idxmin()]
-        produkrendahdata = {
-            'jumlah': int(produkrendahdata['Jumlah']),
-            'nama': produkrendahdata['Produk']
-        }
-        produkrendahdata = json.dumps(produkrendahdata)
-        return produkrendahdata
-
-    current_task.update_state(state='PROGRESS', meta={'status': 'Get Data From Database'})
-
-    produkfixdata = pd.DataFrame(columns={'Produk', 'Jumlah', 'DataTanggal'})
-    lastmonthtemp = pd.DataFrame(columns={'nama', 'Assignment'})
-    last3monthtemp = pd.DataFrame(columns={'nama', 'Assignment'})
-
-    if datestart.__len__() == 0:
-        datestart = '2000-01-01'
-        datestart = datetime.strptime(datestart, '%Y-%m-%d')
-    if dateend.__len__() == 0:
-        dateend = '2020-12-12'
-        dateend = datetime.strptime(dateend, '%Y-%m-%d')
-
-    indexmonth = 0
-    index3month = 0
-    statusdata = 0
-
-    if katmodel == 'Sepatu Pria':
-        if katmodel2 == '':
-            dataset = pd.DataFrame(
-                list(models.SepatuPria.objects.filter(tanggal__range=[datestart, dateend]).values('produk', 'tanggal')))
-            jumproduk = 1
-            datatask = task(dataset, katmodel, jumproduk, indexmonth, index3month)
-
-            produkfixdata = datatask.get('produkfix')
-            produkfixdata = sortdata(produkfixdata)
-            produkfixtinggi = produktinggi(produkfixdata)
-            produkfixrendah = produkrendah(produkfixdata)
-
-            lastmonthtemp = datatask.get('lastmonth')
-            lastmonthtemp = jumlahulasan(lastmonthtemp)
-            lastmonthtinggi = produktinggi(lastmonthtemp)
-
-            last3monthtemp = datatask.get('last3month')
-            last3monthtemp = jumlahulasan(last3monthtemp)
-            last3monthtinggi = produktinggi(last3monthtemp)
-
-            yaxis = datatask.get('yaxis')
-            yaxis = yaxis.astype(str)
-
-            finaldata = {
-                'produk': produkfixdata.to_json(orient='records'),
-                'produktinggi': produkfixtinggi,
-                'produkrendah': produkfixrendah,
-                'lastmonth': lastmonthtinggi,
-                'last3month': last3monthtinggi,
-                'yaxis': yaxis,
-            }
-
-            return finaldata
-
-        else:
-            loop = katmodel2.split(sep=',')
-            jumproduk = -1
-            yaxistemp = []
-
-            for m, n in enumerate(loop):
-                loop[m] = n.strip()
-                if loop[m].__len__() is 0 or loop[m].isspace():
-                    continue
-
-                data = pd.DataFrame(list(models.SepatuPria.objects.filter(
-                    Q(produk__icontains=loop[m] + ' ') | Q(produk__icontains=' ' + loop[m] + ' ') | Q(
-                        produk__icontains=' ' + loop[m])).filter(tanggal__range=[datestart, dateend]).values('produk',
-                                                                                                             'tanggal')))
-
-                if data.__len__() is 0:
-                    continue
-                else:
-                    statusdata = 1
-
-                datatask = task(data, loop[m], jumproduk, indexmonth, index3month)
-
-                yaxistemp.append(datatask.get('yaxis'))
-
-                datatemp = datatask.get('produkfix')
-                datatemp['Produk'] = loop[m] + ' ' + datatemp['Produk']
-                produkfixdata = produkfixdata.append(datatemp, sort=False)
-
-                monthtemp = datatask.get('lastmonth')
-                monthtemp['nama'] = loop[m] + ' ' + monthtemp['nama']
-                lastmonthtemp = lastmonthtemp.append(monthtemp, sort=False)
-
-                month3temp = datatask.get('last3month')
-                month3temp['nama'] = loop[m] + ' ' + month3temp['nama']
-                last3monthtemp = last3monthtemp.append(month3temp, sort=False)
-
-                indexmonth = indexmonth + lastmonthtemp.__len__()
-                index3month = index3month + last3monthtemp.__len__()
-
-            if statusdata is 0:
-                return 'FAIL'
-
-            yaxis = max(yaxistemp).astype(str)
-
-            produkfixdata = sortdata(produkfixdata)
-            produkfixtinggi = produktinggi(produkfixdata)
-            produkfixrendah = produkrendah(produkfixdata)
-
-            lastmonthtinggi = jumlahulasan(lastmonthtemp)
-            lastmonthtinggi = produktinggi(lastmonthtinggi)
-
-            last3monthtinggi = jumlahulasan(last3monthtemp)
-            last3monthtinggi = produktinggi(last3monthtinggi)
-
-            finaldata = {
-                'produk': produkfixdata.to_json(orient='records'),
-                'produktinggi': produkfixtinggi,
-                'produkrendah': produkfixrendah,
-                'lastmonth': lastmonthtinggi,
-                'last3month': last3monthtinggi,
-                'yaxis': yaxis,
-            }
-
-            return finaldata

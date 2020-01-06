@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
-from ecommercetrends.tasks import totalulasan, tasksearch
+from ecommercetrends.tasks import tasksearch
 
 
 def home(request):
