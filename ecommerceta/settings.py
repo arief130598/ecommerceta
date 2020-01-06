@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'ecommerceta',
         'USER': 'knight',
         'PASSWORD': 'Arief-1305',
-        'HOST': 'ecommerceta.database.windows.net',
+        'HOST': 'ecommerceanalysis2.database.windows.net',
         'PORT': '1433',
 
         'OPTIONS': {
