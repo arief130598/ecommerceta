@@ -31,7 +31,7 @@
       </a>
       <form action="{% url 'search' %}" method="post">
           {% csrf_token %}
-          <ul class="navbar-nav mr-3">
+          <ul class="navbar-nav mr-xl-5">
             <li class="nav-item px-1 col-auto">
               <select class="form-control" name="ecommerce" id="ecommerce">
                 <option value='shopee'>Shopee</option>
@@ -48,12 +48,13 @@
               <select class="form-control" name="kategoriutama" id="kategoriutama">
                 <option value='sepatu pria'>Sepatu Pria</option>
                 <option value='laptop'>Laptop</option>
+                <option value='makanan & minuman'>Makanan dan Minuman</option>
               </select>
             </li>
             <li class="nav-item px-1 mr-n4 col-4">
               <input type="text" class="form-control" name="searchkeyword" placeholder="Opsional, Keyword pisahkan dengan ' , '" aria-label="Keyword" aria-describedby="basic-addon2">
             </li>
-            <li class="nav-item px-1 mt-2 col-auto">
+            <li class="nav-item px-1 mt-2 mr-xl-5 col-auto">
               <button type="submit" class="btn btn-primary ml-4 mb-2" onclick="newdropdown()">Search</button>
             </li>
           </ul>

@@ -39,7 +39,9 @@ def get_task_info(request):
                     'judul': task.info.get('judul'),
                     'maday': json.loads(task.info.get('maday')),
                     'mamonth': json.loads(task.info.get('mamonth')),
-                    'mayear': json.loads(task.info.get('mayear'))
+                    'mayear': json.loads(task.info.get('mayear')),
+                    'jumlahterjual': task.info.get('jumlahterjual'),
+                    'jumlahulasan': task.info.get('jumlahulasan')
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -56,13 +58,24 @@ def get_task_info(request):
                 }
                 return HttpResponse(json.dumps(data), content_type='application/json')
 
+            dataproduk = json.loads(task.result.get('dataproduk'))
+            dataproduk = [json.loads(i) for i in dataproduk]
+            datamaproduk = json.loads(task.result.get('datamaproduk'))
+            datamaproduk = [json.loads(i) for i in datamaproduk]
+
             data = {
                 'state': task.state,
-                'produk': json.loads(task.result.get('produk')),
-                'produktinggi': json.loads(task.result.get('produktinggi')),
-                'produkrendah': json.loads(task.result.get('produkrendah')),
-                'lastmonth': json.loads(task.result.get('lastmonth')),
-                'last3month': json.loads(task.result.get('last3month')),
+                'namaproduk': json.loads(task.result.get('namaproduk')),
+                'dataproduk': dataproduk,
+                'datamaproduk': datamaproduk,
+                'jumlahterjual': json.loads(task.result.get('jumlahterjual')),
+                'jumlahulasan': json.loads(task.result.get('jumlahulasan')),
+                'jumlahulasan3bulan': json.loads(task.result.get('jumlahulasan3bulan')),
+                'jumlahulasan1bulan': json.loads(task.result.get('jumlahulasan1bulan')),
+                'tertinggi': json.loads(task.result.get('tertinggi')),
+                'terendah': json.loads(task.result.get('terendah')),
+                'terakhir3': json.loads(task.result.get('terakhir3')),
+                'terakhir1': json.loads(task.result.get('terakhir1')),
                 'yaxis': int(task.result.get('yaxis'))
             }
             return HttpResponse(json.dumps(data), content_type='application/json')
@@ -78,7 +91,6 @@ def get_task_info(request):
 
 def search(request):
     idtask = 0
-    katmodel2 = ''
 
     ecommerce = request.POST.get('ecommerce')
     datestart = request.POST.get('datestart')

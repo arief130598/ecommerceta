@@ -48,7 +48,7 @@ function updateChart(tipe, iditem) {
 
 function addmainchart(idx, idelement){
 
-    var chart = am4core.create(idelement, am4charts.XYChart);
+    var chartmain = am4core.create(idelement, am4charts.XYChart);
 
     chartdatatemp = [];
     for(var i=0; i<month[idx].length; i++){
@@ -59,17 +59,17 @@ function addmainchart(idx, idelement){
         });
     }
 
-    chart.data = chartdatatemp;
+    chartmain.data = chartdatatemp;
 
     // Create axes
-    var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    var dateAxis = chartmain.xAxes.push(new am4charts.DateAxis());
     dateAxis.renderer.minGridDistance = 50;
     dateAxis.renderer.grid.template.disabled = true;
 
-    var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    var valueAxis = chartmain.yAxes.push(new am4charts.ValueAxis());
 
     // Create series
-    var series = chart.series.push(new am4charts.LineSeries());
+    var series = chartmain.series.push(new am4charts.LineSeries());
     series.dataFields.valueY = "value";
     series.dataFields.dateX = "label";
     series.stroke = am4core.color("#0000ff");
@@ -83,7 +83,7 @@ function addmainchart(idx, idelement){
     series.tensionX = 0.77;
 
     // Create series
-    var series2 = chart.series.push(new am4charts.LineSeries());
+    var series2 = chartmain.series.push(new am4charts.LineSeries());
     series2.dataFields.valueY = "valuema";
     series2.dataFields.dateX = "label";
     series2.stroke = am4core.color("#ff0000");
@@ -97,15 +97,15 @@ function addmainchart(idx, idelement){
     series2.tensionX = 0.77;
 
     // Add scrollbar
-    chart.scrollbarX = new am4charts.XYChartScrollbar();
-    chart.scrollbarX.series.push(series);
+    chartmain.scrollbarX = new am4charts.XYChartScrollbar();
+    chartmain.scrollbarX.series.push(series);
 
     // Add cursor
-    chart.cursor = new am4charts.XYCursor();
-    chart.cursor.xAxis = dateAxis;
-    chart.cursor.snapToSeries = series;
+    chartmain.cursor = new am4charts.XYCursor();
+    chartmain.cursor.xAxis = dateAxis;
+    chartmain.cursor.snapToSeries = series;
 
-    listchart.push(chart);
+    listchart.push(chartmain);
 }
 
 var tanggalproduk = [];
@@ -133,6 +133,7 @@ function addlistchart(item, y){
     dateAxis.renderer.grid.template.disabled = true;
 
     var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    valueAxis.max = yaxis;
 
     // Create series
     var series = chart.series.push(new am4charts.LineSeries());
@@ -195,6 +196,7 @@ $(function get_task() {
                 if(data.result == "Bag of Word"){
                     if(judultemp != data.judul){
                         judultemp = data.judul;
+                        console.log(judultemp);
 
                         var tanggaltemp = [];
                         var bulantemp = [];
@@ -253,7 +255,8 @@ $(function get_task() {
                                 '<div class="row">' +
                                   '<div class="col-sm-5">' +
                                    '<h4 class="card-title mb-0" style="text-transform:capitalize;">' + data.judul +'</h4>' +
-                                    '<!-- <div id="totalterjual" class="small text-muted">Total Terjual' + data.terjual  +'Produk</div> -->' +
+                                    '<div id="totalterjual" class="small text-muted">Total Terjual ' + data.jumlahterjual  +' Produk</div>' +
+                                    '<div id="totalterjual" class="small text-muted">Total Ulasan ' + data.jumlahulasan  +' Ulasan</div>' +
                                   '</div>' +
                                   '<!-- /.col-->' +
                                  '<div class="col-sm-7 d-none d-md-block">' +
@@ -320,45 +323,59 @@ $(function get_task() {
 
                 var total = 0;
 
-                var produk = [];
-                var jumlah = [];
+                var namaproduk = [];
+                var jumlahterjual = [];
+                var jumlahulasan = [];
 
-                $.each(data.produk, function (i, item) {
+                $.each(data.namaproduk, function (i, item) {
+                    namaproduk.push(item)
+                });
+
+                $.each(data.jumlahterjual, function (i, item) {
+                    jumlahterjual.push(item)
+                });
+
+                $.each(data.jumlahulasan, function (i, item) {
+                    jumlahulasan.push(item)
+                });
+
+                $.each(data.dataproduk, function (i, item) {
                     var tempvalue = [];
                     var temptanggal = [];
-                    var tempvaluema = [];
 
-                    $.each(item.DataTanggal, function (j, order) {
+                    $.each(item, function (j, order) {
                         temptanggal.push(order.tanggal);
                         tempvalue.push(order.value);
                     });
 
-                    $.each(item.DataTanggalMA, function (j, order) {
-                        tempvaluema.push(order.value);
-                    });
-
                     tanggalproduk.push(temptanggal);
                     valueproduk.push(tempvalue);
-                    valueprodukma.push(tempvaluema);
-                    produk.push(item.Produk);
-                    jumlah.push(item.Jumlah);
                 });
 
-                $.each(jumlah, function (i, item) {
+                $.each(data.datamaproduk, function (i, item) {
+                    var tempvaluema = [];
+
+                    $.each(item, function (j, order) {
+                        tempvaluema.push(order.value);
+                    });
+                    valueprodukma.push(tempvaluema);
+                });
+
+                $.each(jumlahterjual, function (i, item) {
                     total += item;
                 });
 
                 var x=1;
 
-                for(var i=0; i<produk.length; i++){
-                    var percent = jumlah[i] / total * 100;
+                for(var i=0; i<namaproduk.length; i++){
+                    var percent = jumlahterjual[i] / total * 100;
 
-                    var canvastemplate = '<div style="height:250px; width:100%; margin-top: -5px;" id="' + produk[i] + '"></div>';
+                    var canvastemplate = '<div style="height:250px; width:100%; margin-top: -5px;" id="' + namaproduk[i] + '"></div>';
                     var listvaluetemplate = "" +
                         '<div class="progress-group" style="margin-top: 2%;">' +
                           '<div class="progress-group-header align-items-end">' +
-                            '<a data-toggle="modal" data-target="#exampleModalCenter" style="text-transform:capitalize;">' + x + '. ' + produk[i] + '</a>' +
-                            '<div class="ml-auto font-weight-bold mr-2">' + jumlah[i] + '</div>' +
+                            '<a data-toggle="modal" data-target="#exampleModalCenter" style="text-transform:capitalize;">' + x + '. ' + namaproduk[i] + '</a>' +
+                            '<div class="ml-auto font-weight-bold mr-2"> Terjual : ' + jumlahterjual[i] + '   Ulasan : ' + jumlahulasan[i] + '</div>' +
                             '<div class="text-muted small">' + Math.round(percent * 100) / 100 + '%</div>' +
                           '</div>' +
                           '<div class="progress-group-bars">' +
@@ -370,18 +387,18 @@ $(function get_task() {
 
                     $("#listvalue").append(listvaluetemplate);
                     $("#listvalue").append(canvastemplate);
-                    addlistchart(produk[i], i);
+                    addlistchart(namaproduk[i], i);
                     x++;
                 }
 
-                $("#produktinggi").text(data.produktinggi.nama);
-                $("#valuetinggi").text(data.produktinggi.jumlah);
-                $("#produktinggi3").text(data.last3month.nama);
-                $("#valuetinggi3").text(data.last3month.jumlah);
-                $("#produktinggi1").text(data.lastmonth.nama);
-                $("#valuetinggi1").text(data.lastmonth.jumlah);
-                $("#produkrendah").text(data.produkrendah.nama);
-                $("#valuerendah").text(data.produkrendah.jumlah);
+                $("#produktinggi").text(data.tertinggi.nama);
+                $("#valuetinggi").text(data.tertinggi.jumlah);
+                $("#produktinggi3").text(data.terakhir3.nama);
+                $("#valuetinggi3").text(data.terakhir3.jumlah);
+                $("#produktinggi1").text(data.terakhir1.nama);
+                $("#valuetinggi1").text(data.terakhir1.jumlah);
+                $("#produkrendah").text(data.terendah.nama);
+                $("#valuerendah").text(data.terendah.jumlah);
 
                 $("html").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});
                 $("body").css({"background-color": "#e4e5e6", "overflow-x": "visible", "overflow-y": "visible",});
@@ -393,7 +410,7 @@ $(function get_task() {
            if(data.state != 'SUCCESS') {
                setTimeout(function () {
                    get_task()
-               }, 5000);
+               }, 3000);
            }
        },
        error: function (data) {
