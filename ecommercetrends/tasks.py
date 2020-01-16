@@ -11,7 +11,6 @@ import pandas as pd
 import nltk
 from django.db.models import Q
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import silhouette_score
 from datetime import datetime
